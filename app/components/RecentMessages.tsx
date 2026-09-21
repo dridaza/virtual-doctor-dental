@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { WhatsAppButton, EmailButton } from './ContactActions';
+import ConversationModal from './ConversationModal';
 
 type Conversation = {
   id: string;
@@ -42,6 +43,7 @@ export default function RecentMessages() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [openConv, setOpenConv] = useState<Conversation | null>(null);
 
   const [replyingId, setReplyingId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
@@ -96,7 +98,7 @@ export default function RecentMessages() {
       <ul className="messages-list">
         {items.length === 0 && <div className="empty">Sin mensajes recientes.</div>}
         {items.map((c) => (
-          <li key={c.id} className="message-item" onClick={() => router.push(`/patients/${c.contactId}`)}>
+          <li key={c.id} className="message-item" onClick={() => setOpenConv(c)}>
             <div className="message-row">
               <strong>{c.contactName}</strong>
               <span className="message-time">{timeAgo(c.lastMessageDate)}</span>
@@ -152,6 +154,11 @@ export default function RecentMessages() {
       {loading && <div className="empty">Cargando…</div>}
       {error && <div className="status-line error">Error: {error}</div>}
       {!loading && !error && renderList(conversations.slice(0, 8), true)}
+
+      {openConv && createPortal(
+        <ConversationModal conv={openConv} onClose={() => setOpenConv(null)} onOpenPatient={(id) => router.push(`/patients/${id}`)} />,
+        document.body
+      )}
 
       {expanded && createPortal(
         <div className="overlay modal-overlay" onClick={() => setExpanded(false)}>
