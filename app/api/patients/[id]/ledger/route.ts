@@ -2,6 +2,7 @@ import { editLockDays } from '@/lib/edit-lock';
 import { loadPaquetes, paquetesDeNotas, Paquete } from '@/lib/paquetes';
 import { logEvent } from '@/lib/audit-log';
 import { NextResponse } from 'next/server';
+import { cleanSoap, Soap } from '@/lib/soap';
 import { ghlFetch, getLocationId, HC_NOTE_PREFIX, HC_ANNOTATION_PREFIX } from '@/lib/ghl';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,7 @@ type LedgerRow = {
   notaId?: string;
   citaId?: string;
   paqueteId?: string;
+  soap?: Soap;
   presupuesto?: number;
 };
 
@@ -40,6 +42,7 @@ function parseHcNote(note: any): LedgerRow | null {
       pago: Number(data.pago || 0),
       ...(data.citaId ? { citaId: String(data.citaId) } : {}),
       ...(data.paqueteId ? { paqueteId: String(data.paqueteId) } : {}),
+      ...(cleanSoap(data.soap) ? { soap: cleanSoap(data.soap)! } : {}),
     };
   } catch {
     return null;
@@ -240,7 +243,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       if (paquete.estado === 'vencido') return NextResponse.json({ error: 'Este paquete está vencido' }, { status: 400 });
     }
 
-    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago, ...(paqueteId ? { paqueteId } : {}) })}`;
+    const soap = cleanSoap(body.soap);
+    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago, ...(paqueteId ? { paqueteId } : {}), ...(soap ? { soap } : {}) })}`;
     const data = await ghlFetch<{ note: any }>(`/contacts/${contactId}/notes`, {
       method: 'POST',
       body: JSON.stringify({ body: noteBody }),

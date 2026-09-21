@@ -8,6 +8,7 @@ import WeekCalendar from './components/WeekCalendar';
 import RecentMessages from './components/RecentMessages';
 import DateWeatherQuote from './components/DateWeatherQuote';
 import UserBadge from './components/UserBadge';
+import ChatWidget from './components/ChatWidget';
 import UserProfileCard from './components/UserProfileCard';
 
 type Patient = {
@@ -171,6 +172,7 @@ export default function Dashboard() {
 
   return (
     <div className="page">
+      <ChatWidget />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
         <Link href="/perfil" className="app-title-link">Virtual Doctor</Link>
         <UserBadge />

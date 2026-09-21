@@ -1,4 +1,5 @@
 import { logEvent } from '@/lib/audit-log';
+import { cleanSoap } from '@/lib/soap';
 import { NextResponse } from 'next/server';
 import { ghlFetch, HC_NOTE_PREFIX } from '@/lib/ghl';
 import { editLockDays } from '@/lib/edit-lock';
@@ -45,7 +46,8 @@ export async function PUT(
     }
 
     const citaId = existing.parsed.citaId;
-    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago, ...(citaId ? { citaId } : {}), ...(existing.parsed.paqueteId ? { paqueteId: existing.parsed.paqueteId } : {}) })}`;
+    const soap = 'soap' in body ? cleanSoap(body.soap) : cleanSoap(existing.parsed.soap);
+    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago, ...(citaId ? { citaId } : {}), ...(existing.parsed.paqueteId ? { paqueteId: existing.parsed.paqueteId } : {}), ...(soap ? { soap } : {}) })}`;
     const data = await ghlFetch<{ note: any }>(`/contacts/${contactId}/notes/${noteId}`, {
       method: 'PUT',
       body: JSON.stringify({ body: noteBody }),

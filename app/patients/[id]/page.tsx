@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import ConsentimientosInformadosCard from '@/app/components/ConsentimientosInformadosCard';
 import MedicalFichaView from './MedicalFichaView';
 import PaquetesCard, { PaqueteUI } from '../../components/PaquetesCard';
 import { moduleConfig } from '@/lib/modules';
@@ -47,6 +48,7 @@ type LedgerRow = {
   notaId?: string;
   citaId?: string;
   paqueteId?: string;
+  soap?: { s: string; o: string; a: string; p: string };
   presupuesto?: number;
 };
 
@@ -162,6 +164,9 @@ export default function PatientPage() {
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
 
   const [newVisit, setNewVisit] = useState({ fecha: '', tratamiento: '', pieza: '', material: '', cargo: '', pago: '' });
+  const emptySoap = { s: '', o: '', a: '', p: '' };
+  const [newSoap, setNewSoap] = useState(emptySoap);
+  const [editSoap, setEditSoap] = useState(emptySoap);
   const [addingVisit, setAddingVisit] = useState(false);
 
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
@@ -177,6 +182,7 @@ export default function PatientPage() {
 
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [recetasLoading, setRecetasLoading] = useState(true);
+  const [sendingReceta, setSendingReceta] = useState<string | null>(null);
   const [newReceta, setNewReceta] = useState({ fecha: '', medicamentos: '', indicaciones: '' });
   const [addingReceta, setAddingReceta] = useState(false);
   const [professional, setProfessional] = useState<ProfessionalProfile>({ nombre: '', titulo: '', cedula: '', institucion: '' });
@@ -279,10 +285,12 @@ export default function PatientPage() {
           material: newVisit.material,
           cargo: newVisit.cargo,
           pago: newVisit.pago,
+          soap: moduleConfig.notasEvolucion ? newSoap : undefined,
         }),
       });
       if (res.ok) {
         setNewVisit({ fecha: '', tratamiento: '', pieza: '', material: '', cargo: '', pago: '' });
+        setNewSoap(emptySoap);
         loadLedger();
       }
     } finally {
@@ -292,6 +300,7 @@ export default function PatientPage() {
 
   function startEdit(row: LedgerRow) {
     setEditingRowId(row.id);
+    setEditSoap(row.soap || emptySoap);
     setEditDraft({
       fecha: toLocalInput(row.fecha),
       tratamiento: row.tratamiento,
@@ -320,6 +329,7 @@ export default function PatientPage() {
           material: editDraft.material,
           cargo: editDraft.cargo,
           pago: editDraft.pago,
+          soap: moduleConfig.notasEvolucion ? editSoap : undefined,
         }),
       });
       if (res.ok) {
@@ -408,6 +418,22 @@ export default function PatientPage() {
       }
     } finally {
       setAddingReceta(false);
+    }
+  }
+
+  async function sendReceta(receta: Receta, via: { email?: boolean; sms?: boolean }) {
+    setSendingReceta(receta.id);
+    try {
+      const res = await fetch(`/api/patients/${id}/recetas/${receta.id}/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(via),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok && d.ok) alert(via.email ? 'Receta enviada por email.' : 'Receta enviada por SMS.');
+      else alert(d.error || (d.errors || []).join('\n') || 'No se pudo enviar la receta.');
+    } finally {
+      setSendingReceta(null);
     }
   }
 
@@ -581,7 +607,7 @@ export default function PatientPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <div className="ficha-header">
         <div className="ficha-header-identity">
           <div className="patient-photo-wrap">
@@ -611,6 +637,7 @@ export default function PatientPage() {
           <button type="button" className="primary" onClick={() => setShowAgendar(true)}>Agendar cita</button>
           <button type="button" className="tint-amber" onClick={() => setShowPago(true)}>Crear pago</button>
           <button type="button" className="success" onClick={() => setShowPresupuesto(true)}>Presupuesto</button>
+          {moduleConfig.recetas && <button type="button" className="button tint-teal" onClick={() => setTab('recetas')}>Receta</button>}
           <Link href={`/patients/${id}/print`} target="_blank" className="button tint-teal">Imprimir ficha</Link>
           <button type="button" className="tint-violet" onClick={() => setShowShareForm(true)}>Compartir formulario</button>
           <button type="button" className="tint-amber" onClick={() => setShowDuplicates(true)}>Posibles duplicados</button>
@@ -668,6 +695,7 @@ export default function PatientPage() {
             <PaquetesCard patientId={id} patientName={patient.name} paquetes={paquetes} onChanged={loadLedger} />
           )}
 
+          {moduleConfig.consentimientosInformados && patient && <ConsentimientosInformadosCard patientId={id} patientName={patient.name} />}
           <form className="card visit-form" onSubmit={submitVisit}>
             <h3>Agregar visita</h3>
             <p className="hint">{moduleConfig.visitaHint} El cargo que anotes aquí aparece automáticamente en Facturación.</p>
@@ -701,6 +729,16 @@ export default function PatientPage() {
                 <input type="number" min={0} step="0.01" value={newVisit.pago} onChange={(e) => setNewVisit({ ...newVisit, pago: e.target.value })} placeholder="0" />
               </label>
             </div>
+            {moduleConfig.notasEvolucion && (
+              <div className="soap-grid" style={{ margin: '10px 0' }}>
+                <p className="hint" style={{ margin: 0 }}>Nota de evolución (SOAP)</p>
+                {([['s', 'S — Subjetivo (motivo, síntomas)'], ['o', 'O — Objetivo (exploración, signos)'], ['a', 'A — Análisis (diagnóstico)'], ['p', 'P — Plan (tratamiento, indicaciones)']] as const).map(([k, label]) => (
+                  <label className="field" key={k} style={{ marginTop: 6 }}><span>{label}</span>
+                    <textarea rows={2} value={newSoap[k]} onChange={(e) => setNewSoap({ ...newSoap, [k]: e.target.value })} />
+                  </label>
+                ))}
+              </div>
+            )}
             <button className="primary" type="submit" disabled={addingVisit}>{addingVisit ? 'Guardando…' : 'Agregar'}</button>
           </form>
 
@@ -724,7 +762,8 @@ export default function PatientPage() {
 
                   if (isEditing) {
                     return (
-                      <tr key={row.id} className="editing-row">
+                      <Fragment key={row.id}>
+                      <tr className="editing-row">
                         <td className="actions-col row-actions">
                           <button type="button" className="primary" onClick={saveEdit} disabled={savingEdit}>{savingEdit ? 'Guardando…' : '✓ Guardar'}</button>
                           <button type="button" onClick={cancelEdit}>Cancelar</button>
@@ -736,11 +775,24 @@ export default function PatientPage() {
                         <td><input type="text" value={editDraft.material} onChange={(e) => setEditDraft({ ...editDraft, material: e.target.value })} style={{ width: 90 }} /></td>
                         <td><input type="number" min={0} step="0.01" value={editDraft.cargo} onChange={(e) => setEditDraft({ ...editDraft, cargo: e.target.value })} style={{ width: 80 }} /></td>
                       </tr>
+                      {moduleConfig.notasEvolucion && (
+                        <tr className="editing-row"><td colSpan={7}>
+                          <div className="soap-grid">
+                            {([['s', 'S — Subjetivo'], ['o', 'O — Objetivo'], ['a', 'A — Análisis'], ['p', 'P — Plan']] as const).map(([k, label]) => (
+                              <label className="field" key={k} style={{ marginTop: 6 }}><span>{label}</span>
+                                <textarea rows={2} value={editSoap[k]} onChange={(e) => setEditSoap({ ...editSoap, [k]: e.target.value })} />
+                              </label>
+                            ))}
+                          </div>
+                        </td></tr>
+                      )}
+                      </Fragment>
                     );
                   }
 
                   return (
-                    <tr key={row.id}>
+                    <Fragment key={row.id}>
+                    <tr>
                       <td className="actions-col row-actions">
                         <div className="row-actions">
                           {editable ? (
@@ -779,6 +831,16 @@ export default function PatientPage() {
                       <td>{row.material || '—'}</td>
                       <td>{row.source === 'estimate' ? <span title="Presupuesto (no es un cargo)">Presup. {money(row.presupuesto || 0)}</span> : row.cargo ? money(row.cargo) : '—'}</td>
                     </tr>
+                    {moduleConfig.notasEvolucion && row.soap && (
+                      <tr><td colSpan={7} style={{ background: 'rgba(120,80,180,.06)' }}>
+                        <div className="soap-view" style={{ display: 'grid', gap: 4, fontSize: 13 }}>
+                          {([['s', 'S'], ['o', 'O'], ['a', 'A'], ['p', 'P']] as const).filter(([k]) => row.soap![k]).map(([k, l]) => (
+                            <div key={k}><strong>{l}:</strong> <span style={{ whiteSpace: 'pre-wrap' }}>{row.soap![k]}</span></div>
+                          ))}
+                        </div>
+                      </td></tr>
+                    )}
+                    </Fragment>
                   );
                 })}
               </tbody>
@@ -953,6 +1015,8 @@ export default function PatientPage() {
                 <strong>{formatDate(r.fecha)}</strong>
                 <div className="row-actions">
                   <Link href={`/patients/${id}/recetas/${r.id}/print`} target="_blank" className="button">Imprimir</Link>
+                  <button type="button" disabled={sendingReceta === r.id} onClick={() => sendReceta(r, { email: true })}>Enviar email</button>
+                  <button type="button" disabled={sendingReceta === r.id} onClick={() => sendReceta(r, { sms: true })}>Enviar SMS</button>
                   <button type="button" onClick={() => deleteReceta(r)}>Eliminar</button>
                 </div>
               </div>
