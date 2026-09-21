@@ -1,4 +1,5 @@
 import { editLockDays } from '@/lib/edit-lock';
+import { loadPaquetes, paquetesDeNotas, Paquete } from '@/lib/paquetes';
 import { logEvent } from '@/lib/audit-log';
 import { NextResponse } from 'next/server';
 import { ghlFetch, getLocationId, HC_NOTE_PREFIX, HC_ANNOTATION_PREFIX } from '@/lib/ghl';
@@ -18,6 +19,7 @@ type LedgerRow = {
   notaTexto?: string;
   notaId?: string;
   citaId?: string;
+  paqueteId?: string;
   presupuesto?: number;
 };
 
@@ -37,6 +39,7 @@ function parseHcNote(note: any): LedgerRow | null {
       cargo: Number(data.cargo || 0),
       pago: Number(data.pago || 0),
       ...(data.citaId ? { citaId: String(data.citaId) } : {}),
+      ...(data.paqueteId ? { paqueteId: String(data.paqueteId) } : {}),
     };
   } catch {
     return null;
@@ -80,12 +83,12 @@ async function fetchInvoiceRows(contactId: string): Promise<LedgerRow[]> {
   }));
 }
 
-async function fetchNotes(contactId: string): Promise<{ noteRows: LedgerRow[]; annotations: Annotation[] }> {
+async function fetchNotes(contactId: string): Promise<{ noteRows: LedgerRow[]; annotations: Annotation[]; paquetes: Paquete[] }> {
   const data = await ghlFetch<{ notes: any[] }>(`/contacts/${contactId}/notes`);
   const notes = data.notes || [];
   const noteRows = notes.map(parseHcNote).filter((r): r is LedgerRow => r !== null);
   const annotations = notes.map(parseAnnotation).filter((a): a is Annotation => a !== null);
-  return { noteRows, annotations };
+  return { noteRows, annotations, paquetes: paquetesDeNotas(notes) };
 }
 
 async function fetchEstimateRows(contactId: string): Promise<LedgerRow[]> {
@@ -141,6 +144,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const invoiceRows = invoicesRes.status === 'fulfilled' ? invoicesRes.value : [];
     const noteRows = notesRes.status === 'fulfilled' ? notesRes.value.noteRows : [];
     const annotations = notesRes.status === 'fulfilled' ? notesRes.value.annotations : [];
+    const paquetes = notesRes.status === 'fulfilled' ? notesRes.value.paquetes : [];
     const appointmentRows = appointmentsRes.status === 'fulfilled' ? appointmentsRes.value : [];
     const estimateRows = estimatesRes.status === 'fulfilled' ? estimatesRes.value : [];
 
@@ -200,6 +204,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
     return NextResponse.json({
       rows: withSaldo,
+      paquetes,
       editLockDays: editLockDays(),
       saldoActual: saldo,
       invoicesError: invoicesRes.status === 'rejected' ? String(invoicesRes.reason?.message || invoicesRes.reason) : null,
@@ -226,7 +231,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'El tratamiento es obligatorio' }, { status: 400 });
     }
 
-    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago })}`;
+    // Sesión de un paquete: solo si el paquete existe, está activo (con sesiones disponibles y sin vencer).
+    const paqueteId = body.paqueteId ? String(body.paqueteId) : '';
+    if (paqueteId) {
+      const paquete = (await loadPaquetes(contactId)).find((p) => p.id === paqueteId);
+      if (!paquete) return NextResponse.json({ error: 'El paquete no existe' }, { status: 400 });
+      if (paquete.estado === 'completado') return NextResponse.json({ error: 'Este paquete ya usó todas sus sesiones' }, { status: 400 });
+      if (paquete.estado === 'vencido') return NextResponse.json({ error: 'Este paquete está vencido' }, { status: 400 });
+    }
+
+    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago, ...(paqueteId ? { paqueteId } : {}) })}`;
     const data = await ghlFetch<{ note: any }>(`/contacts/${contactId}/notes`, {
       method: 'POST',
       body: JSON.stringify({ body: noteBody }),

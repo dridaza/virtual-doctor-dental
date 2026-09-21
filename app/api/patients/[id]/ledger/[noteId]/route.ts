@@ -45,7 +45,7 @@ export async function PUT(
     }
 
     const citaId = existing.parsed.citaId;
-    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago, ...(citaId ? { citaId } : {}) })}`;
+    const noteBody = `${HC_NOTE_PREFIX}${JSON.stringify({ fecha, tratamiento, pieza, material, cargo, pago, ...(citaId ? { citaId } : {}), ...(existing.parsed.paqueteId ? { paqueteId: existing.parsed.paqueteId } : {}) })}`;
     const data = await ghlFetch<{ note: any }>(`/contacts/${contactId}/notes/${noteId}`, {
       method: 'PUT',
       body: JSON.stringify({ body: noteBody }),

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import PaquetesCard, { PaqueteUI } from '../../components/PaquetesCard';
 import { moduleConfig } from '@/lib/modules';
 import SpaFichaView from './SpaFichaView';
 import { useParams, useRouter } from 'next/navigation';
@@ -44,6 +45,7 @@ type LedgerRow = {
   notaTexto?: string;
   notaId?: string;
   citaId?: string;
+  paqueteId?: string;
   presupuesto?: number;
 };
 
@@ -152,6 +154,7 @@ export default function PatientPage() {
   const [intakeSave, setIntakeSave] = useState<SaveState>('idle');
 
   const [ledger, setLedger] = useState<LedgerRow[]>([]);
+  const [paquetes, setPaquetes] = useState<PaqueteUI[]>([]);
   const [saldoActual, setSaldoActual] = useState(0);
   const [ledgerLoading, setLedgerLoading] = useState(true);
 
@@ -197,6 +200,7 @@ export default function PatientPage() {
       .then((r) => r.json())
       .then((d) => {
         setLedger(d.rows || []);
+        setPaquetes(d.paquetes || []);
         setEditLockDays(typeof d.editLockDays === 'number' ? d.editLockDays : 45);
         setSaldoActual(d.saldoActual || 0);
       })
@@ -659,6 +663,10 @@ export default function PatientPage() {
               Imágenes {intake.imagenes.length > 0 && <span className="pill">{intake.imagenes.length}</span>}
             </button>
           </div>
+          {moduleConfig.paquetes && patient && (
+            <PaquetesCard patientId={id} patientName={patient.name} paquetes={paquetes} onChanged={loadLedger} />
+          )}
+
           <form className="card visit-form" onSubmit={submitVisit}>
             <h3>Agregar visita</h3>
             <p className="hint">{moduleConfig.visitaHint} El cargo que anotes aquí aparece automáticamente en Facturación.</p>
@@ -765,7 +773,7 @@ export default function PatientPage() {
                       </td>
                       <td><span className={`badge source-${row.source}`}>{sourceLabel(row.source)}</span></td>
                       <td>{formatDateTime(row.fecha)}</td>
-                      <td>{row.tratamiento || <span className="hint" style={{ margin: 0 }}>Pendiente de llenar</span>}</td>
+                      <td>{row.tratamiento || <span className="hint" style={{ margin: 0 }}>Pendiente de llenar</span>}{row.paqueteId && <span className="badge" style={{ marginLeft: 6, background: '#5e5ce6', color: '#fff' }}>Paquete</span>}</td>
                       <td>{row.pieza || '—'}</td>
                       <td>{row.material || '—'}</td>
                       <td>{row.source === 'estimate' ? <span title="Presupuesto (no es un cargo)">Presup. {money(row.presupuesto || 0)}</span> : row.cargo ? money(row.cargo) : '—'}</td>

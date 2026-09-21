@@ -17,23 +17,24 @@ export type ModuleConfig = {
   tratamientoEjemplo: string;
   visitaHint: string;
   conceptoRecibo: string;
+  paquetes: boolean;
 };
 
 const MODULES: Record<ModuleId, ModuleConfig> = {
   dental: {
     id: 'dental', label: 'Dental', odontograma: true, habitosDentales: true, tituloEjemplo: 'Cirujano Dentista',
     piezaLabel: 'Pieza', piezaEjemplo: '14', materialLabel: 'Material', materialLista: true, tratamientoEjemplo: 'Ej. Obturación',
-    visitaHint: 'Qué se hizo, en qué pieza y con qué material.', conceptoRecibo: 'Consulta / tratamiento dental',
+    visitaHint: 'Qué se hizo, en qué pieza y con qué material.', conceptoRecibo: 'Consulta / tratamiento dental', paquetes: false,
   },
   spa: {
     id: 'spa', label: 'Spa', odontograma: false, habitosDentales: false, tituloEjemplo: 'Cosmiatra / Esteticista',
     piezaLabel: 'Zona', piezaEjemplo: 'Rostro', materialLabel: 'Producto / equipo', materialLista: false, tratamientoEjemplo: 'Ej. Peeling superficial',
-    visitaHint: 'Qué se hizo, en qué zona y con qué producto o equipo.', conceptoRecibo: 'Consulta / tratamiento estético',
+    visitaHint: 'Qué se hizo, en qué zona y con qué producto o equipo.', conceptoRecibo: 'Consulta / tratamiento estético', paquetes: true,
   },
   medical: {
     id: 'medical', label: 'Medicina', odontograma: false, habitosDentales: false, tituloEjemplo: 'Médico Cirujano',
     piezaLabel: 'Zona', piezaEjemplo: 'Abdomen', materialLabel: 'Material / medicamento', materialLista: false, tratamientoEjemplo: 'Ej. Consulta de control',
-    visitaHint: 'Qué se hizo, en qué zona y con qué material o medicamento.', conceptoRecibo: 'Consulta médica',
+    visitaHint: 'Qué se hizo, en qué zona y con qué material o medicamento.', conceptoRecibo: 'Consulta médica', paquetes: false,
   },
 };
 

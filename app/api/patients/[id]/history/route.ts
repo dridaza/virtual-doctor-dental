@@ -22,7 +22,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
     const appointments = appointmentsRes.status === 'fulfilled' ? appointmentsRes.value.events || [] : [];
     const notes = (notesRes.status === 'fulfilled' ? notesRes.value.notes || [] : []).filter(
-      (n: any) => typeof n.body !== 'string' || !n.body.startsWith(HC_NOTE_PREFIX)
+      (n: any) => typeof n.body !== 'string' || !(n.body.startsWith(HC_NOTE_PREFIX) || n.body.startsWith('[HC-'))
     );
 
     const timeline: TimelineEntry[] = [
