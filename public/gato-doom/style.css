@@ -1,0 +1,266 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Courier New', monospace;
+  color: #f4e6c1;
+  user-select: none;
+}
+
+#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffcf5c;
+  font-size: 22px;
+  text-shadow: 0 0 4px #000, 0 0 4px #000;
+}
+
+#topleft {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 4px;
+  background: rgba(20, 10, 10, 0.55);
+  border: 2px solid #7a5230;
+  border-radius: 6px;
+}
+
+#minimap {
+  display: block;
+  background: #1a1108;
+}
+
+#bottombar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 24px;
+  background: linear-gradient(to top, rgba(10,5,0,0.85), rgba(10,5,0,0));
+}
+
+#health {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
+}
+
+#health .label, #ammo .label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #ffcf5c;
+  white-space: nowrap;
+}
+
+.bar {
+  width: 180px;
+  height: 18px;
+  border: 2px solid #7a5230;
+  background: #2a1a10;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(to right, #ff5b3a, #ffcf5c);
+  transition: width 0.2s ease-out;
+}
+
+#ammo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #d9d9c8;
+}
+
+#stats {
+  display: flex;
+  gap: 18px;
+  font-size: 14px;
+  color: #ffcf5c;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: radial-gradient(circle at center, rgba(40,15,10,0.92), rgba(0,0,0,0.97));
+  gap: 14px;
+  padding: 20px;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay h1 {
+  font-size: 38px;
+  margin: 0 0 4px 0;
+  color: #ffcf5c;
+  text-shadow: 0 0 12px #ff5b3a;
+}
+
+.overlay p {
+  max-width: 480px;
+  line-height: 1.5;
+  color: #e8d9b8;
+}
+
+.controls {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 24px;
+  color: #d9d9c8;
+  font-size: 14px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 14px 28px;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1a1108;
+  background: linear-gradient(to bottom, #ffcf5c, #ff9a3a);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #a35a1a;
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #a35a1a;
+}
+
+/* ---- Tilcayo Rules ---- */
+.logo { width: 190px; height: 190px; object-fit: contain; filter: drop-shadow(0 0 14px #ff5b3a); }
+
+#topright {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 8px 14px;
+  text-align: right;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ffcf5c;
+  background: rgba(20, 10, 10, 0.55);
+  border: 2px solid #7a5230;
+  border-radius: 6px;
+}
+#topright b { color: #f4e6c1; font-size: 18px; }
+#themeName { font-size: 11px; color: #d9d9c8; letter-spacing: 1px; }
+
+#toast {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 22px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffcf5c;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 8px;
+  text-shadow: 0 0 8px #ff5b3a;
+  text-align: center;
+  transition: opacity 0.4s;
+}
+#toast.hidden { opacity: 0; }
+
+#hurtFlash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,0,0,0) 40%, rgba(255,0,0,0.55));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#hurtFlash.on { opacity: 1; transition: none; }
+
+#bestRecord { color: #ffcf5c; font-size: 14px; min-height: 18px; }
+
+#nameRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+#nameRow button { margin-top: 0; padding: 10px 18px; font-size: 15px; }
+#playerName {
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 16px;
+  color: #f4e6c1;
+  background: #2a1a10;
+  border: 2px solid #7a5230;
+  border-radius: 6px;
+  user-select: text;
+}
+#ranking {
+  margin: 4px 0;
+  padding: 0 0 0 24px;
+  text-align: left;
+  min-width: 300px;
+  color: #d9d9c8;
+  font-size: 14px;
+}
+#ranking li.me { color: #3aff7a; font-weight: bold; }
+
+.credits { margin-top: 10px; font-size: 12px; letter-spacing: 1px; color: #a89878; }
+
+/* ===== Controles táctiles ===== */
+body.touch { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body.touch .controls { display: none; }
+#touchUI { display: none; }
+body.touch #touchUI { display: block; }
+body.touch #touchUI, body.touch #touchUI * { touch-action: none; }
+#joyBase {
+  display: none; position: fixed; width: 110px; height: 110px; border-radius: 50%;
+  background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.35); z-index: 20; pointer-events: none;
+}
+#joyKnob {
+  position: absolute; left: 30px; top: 30px; width: 50px; height: 50px; border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+}
+#touchUI button {
+  position: fixed; z-index: 20; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);
+  background: rgba(255,80,50,0.55); color: #fff; font: 700 13px system-ui, sans-serif;
+  padding: 0; margin: 0; -webkit-tap-highlight-color: transparent;
+}
+#tFire { right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(26px + env(safe-area-inset-bottom, 0px)); width: 92px; height: 92px; font-size: 15px; }
+#tJump { right: calc(122px + env(safe-area-inset-right, 0px)); bottom: calc(60px + env(safe-area-inset-bottom, 0px)); width: 66px; height: 66px; background: rgba(60,140,255,0.55); }
+#tRun { right: calc(30px + env(safe-area-inset-right, 0px)); bottom: calc(132px + env(safe-area-inset-bottom, 0px)); width: 62px; height: 62px; background: rgba(40,190,120,0.55); }
+#tPause { right: calc(14px + env(safe-area-inset-right, 0px)); top: calc(14px + env(safe-area-inset-top, 0px)); width: 44px; height: 44px; background: rgba(0,0,0,0.5); }

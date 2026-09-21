@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Tilcayo Rules</title>
+  <link rel="icon" href="logo.svg" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud">
+    <div id="hurtFlash"></div>
+    <div id="crosshair">+</div>
+    <div id="toast" class="hidden"></div>
+
+    <div id="topleft">
+      <canvas id="minimap" width="180" height="180"></canvas>
+    </div>
+
+    <div id="topright">
+      <div>NIVEL <b id="level">1</b></div>
+      <div id="themeName"></div>
+      <div>PUNTOS <b id="score">0</b></div>
+      <div>FELINOS <b id="catsLeft">0</b></div>
+    </div>
+
+    <div id="bottombar">
+      <div id="health">
+        <span class="label">VIDA</span>
+        <div class="bar"><div id="healthFill" class="fill"></div></div>
+      </div>
+      <div id="ammo">
+        <span class="label" id="weaponName">GARRAS</span>
+        <span id="ammoCount">-</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="startScreen" class="overlay">
+    <img id="logo" class="logo" src="logo.svg" alt="Tilcayo"
+ />
+    <h1>TILCAYO RULES</h1>
+    <p>Eres <b>Tilcayo</b>, el felino salvaje más pequeño y más hermoso del mundo.
+       Tu hogar es la selva boliviana y quieres quedarte en ella, pero felinos de todos
+       los tamaños y colores desean atraparte y sacarte de allí.
+       Escapa por la salida luminosa de cada laberinto sin morir: cada felino que derribes
+       vale <b>7 puntos</b>. Cada nivel el laberinto crece, cambia el paisaje y aparecen más
+       perseguidores. Cada 5 niveles hay un arma nueva escondida.</p>
+    <ul class="controls">
+      <li><b>WASD</b> moverse</li>
+      <li><b>Mouse</b> mirar</li>
+      <li><b>Click izq.</b> disparar</li>
+      <li><b>Espacio</b> saltar</li>
+      <li><b>Shift</b> correr</li>
+      <li><b>Esc</b> pausa (dos veces: terminar)</li>
+    </ul>
+    <div id="bestRecord"></div>
+    <button id="startBtn">▶ ENTRAR AL LABERINTO</button>
+    <div class="credits">Created by Viku and Ivan Daza. 19sept2026</div>
+  </div>
+
+  <div id="pauseScreen" class="overlay hidden">
+    <h1>PAUSA</h1>
+    <button id="resumeBtn">▶ CONTINUAR</button>
+    <p>Presiona Esc otra vez para terminar la partida.</p>
+  </div>
+
+  <div id="deathScreen" class="overlay hidden">
+    <h1>💀 FIN DEL JUEGO 💀</h1>
+    <p>Llegaste al nivel <b id="finalLevel">1</b>, derribaste <b id="finalKills">0</b> gato(s)
+       y sumaste <b id="finalScore">0</b> puntos.</p>
+    <div id="nameRow">
+      <input id="playerName" type="text" maxlength="16" placeholder="Nombre del participante" autocomplete="off" />
+      <button id="saveBtn">💾 GUARDAR RÉCORD</button>
+    </div>
+    <ol id="ranking"></ol>
+    <button id="retryBtn">🔁 JUGAR DE NUEVO</button>
+  </div>
+
+  <script src="libs/three.min.js"></script>
+  <script src="libs/PointerLockControls.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
