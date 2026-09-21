@@ -98,6 +98,8 @@ export async function GET(request: Request) {
       ...soloCalendarIds.map((calendarId) => fetchEventsFor({ ...base, calendarId })),
     ]);
 
+    // Cada calendario de GHL tiene su color; las citas se pintan con el de su calendario.
+    const colorByCalendar = new Map<string, string>(calendars.map((c) => [c.id, /^#[0-9a-f]{6}$/i.test(c.eventColor || '') ? c.eventColor : '']));
     const seen = new Set<string>();
     const events: any[] = [];
     for (const r of results) {
@@ -112,6 +114,7 @@ export async function GET(request: Request) {
           startTime: e.startTime,
           endTime: e.endTime,
           status: e.appointmentStatus,
+          color: colorByCalendar.get(e.calendarId) || '',
           dateKey: ymdString(new Date(e.startTime), TIMEZONE),
         });
       }

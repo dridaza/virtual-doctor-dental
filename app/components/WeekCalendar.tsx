@@ -11,6 +11,7 @@ type Event = {
   startTime: string;
   endTime: string;
   status: string;
+  color?: string;
   dateKey: string;
 };
 
@@ -61,7 +62,8 @@ function DayColumn({ day, onSelect }: { day: { label: string; dayNumber: number;
           <button
             key={ev.id}
             type="button"
-            className={`week-event status-${ev.status}`}
+            className={`week-event status-${ev.status}${ev.color ? ' has-color' : ''}`}
+            style={ev.color ? ({ '--ev-color': ev.color } as React.CSSProperties) : undefined}
             onClick={() => onSelect(ev.contactId)}
             title={ev.title}
           >

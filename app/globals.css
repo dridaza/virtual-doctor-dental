@@ -1893,3 +1893,8 @@ button.tint-amber:hover, .button.tint-amber:hover { background: linear-gradient(
 /* Menú principal: la columna central (tabla de pacientes) más ancho (1680px) */
 .page.page-home { max-width: 1680px; }
 .page-home .main-layout { grid-template-columns: 300px minmax(0, 1fr) 270px; }
+
+/* Citas del calendario con el color de su calendario en GHL */
+.week-event.has-color { background: var(--ev-color); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); }
+.week-event.has-color.status-cancelled, .week-event.has-color.status-noshow { opacity: 0.55; }
+.week-event.has-color.status-cancelled .week-event-title { text-decoration: line-through; }
