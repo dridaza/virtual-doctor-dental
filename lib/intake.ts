@@ -1,3 +1,4 @@
+import { MedicalFicha, MedicalPaciente, defaultMedical, defaultMedicalPaciente, mergeMedical, applyMedicalPaciente, fillMedicalGaps } from './medical-ficha';
 import { SpaFicha, SpaPaciente, defaultSpa, defaultSpaPaciente, mergeSpa, applySpaPaciente, fillSpaGaps } from './spa-ficha';
 
 export type IntakeForm = {
@@ -64,6 +65,8 @@ export type IntakeForm = {
   archivosMigrados: boolean;
   // Ficha de primera vez del módulo Spa (vacía en los demás módulos).
   spa: SpaFicha;
+  // Historia clínica del módulo Medicina (vacía en los demás módulos).
+  medical: MedicalFicha;
 };
 
 // Subconjunto de la ficha que el propio paciente puede llenar desde el
@@ -82,6 +85,7 @@ export type PatientQuestionnaire = {
   declaracionAceptada: boolean;
   firmaAutorizacion: string;
   spa: SpaPaciente;
+  medical: MedicalPaciente;
 };
 
 export function defaultQuestionnaire(): PatientQuestionnaire {
@@ -98,6 +102,7 @@ export function defaultQuestionnaire(): PatientQuestionnaire {
     declaracionAceptada: base.declaracionAceptada,
     firmaAutorizacion: base.firmaAutorizacion,
     spa: defaultSpaPaciente(),
+    medical: defaultMedicalPaciente(),
   };
 }
 
@@ -119,6 +124,7 @@ export function applyPatientQuestionnaire(current: IntakeForm, q: PatientQuestio
     firmaAutorizacion: q.firmaAutorizacion,
     fechaFicha: current.fechaFicha || new Date().toISOString().slice(0, 10),
     spa: applySpaPaciente(current.spa, q.spa),
+    medical: applyMedicalPaciente(current.medical, q.medical),
   };
 }
 
@@ -189,6 +195,7 @@ export function defaultIntake(): IntakeForm {
     consentimientos: [],
     archivosMigrados: false,
     spa: defaultSpa(),
+    medical: defaultMedical(),
   };
 }
 
@@ -268,6 +275,7 @@ export function fillIntakeGaps(primary: IntakeForm, secondary: IntakeForm): Inta
     ],
     archivosMigrados: primary.archivosMigrados || secondary.archivosMigrados,
     spa: fillSpaGaps(primary.spa, secondary.spa),
+    medical: fillMedicalGaps(primary.medical, secondary.medical),
   };
 }
 
@@ -289,5 +297,6 @@ export function mergeIntake(partial: Partial<IntakeForm> | null | undefined): In
     odontograma: { ...base.odontograma, ...(partial.odontograma || {}) },
     periodontograma: { ...base.periodontograma, ...(partial.periodontograma || {}) },
     spa: mergeSpa(partial.spa),
+    medical: mergeMedical(partial.medical),
   };
 }

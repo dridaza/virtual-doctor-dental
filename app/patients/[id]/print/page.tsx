@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import MedicalPrintBody from './MedicalPrintBody';
 import SpaPrintBody from './SpaPrintBody';
 import { moduleConfig } from '@/lib/modules';
 import { useParams } from 'next/navigation';
@@ -113,6 +114,8 @@ export default function PrintPage() {
 
       {moduleConfig.id === 'spa' ? (
         <SpaPrintBody patient={patient} intake={intake} />
+      ) : moduleConfig.id === 'medical' ? (
+        <MedicalPrintBody patient={patient} intake={intake} />
       ) : (
       <>
 

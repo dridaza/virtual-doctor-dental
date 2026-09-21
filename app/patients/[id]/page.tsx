@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import MedicalFichaView from './MedicalFichaView';
 import PaquetesCard, { PaqueteUI } from '../../components/PaquetesCard';
 import { moduleConfig } from '@/lib/modules';
 import SpaFichaView from './SpaFichaView';
@@ -651,7 +652,7 @@ export default function PatientPage() {
       {tab === 'historia' && (
         <div>
           <div className="tab-toolbar"><SaveIndicator state={intakeSave} /></div>
-          {moduleConfig.id === 'spa' ? <SpaFichaView value={intake} onChange={updateIntake} /> : <IntakeFormView value={intake} onChange={updateIntake} />}
+          {moduleConfig.id === 'spa' ? <SpaFichaView value={intake} onChange={updateIntake} /> : moduleConfig.id === 'medical' ? <MedicalFichaView value={intake} onChange={updateIntake} /> : <IntakeFormView value={intake} onChange={updateIntake} />}
         </div>
       )}
 
