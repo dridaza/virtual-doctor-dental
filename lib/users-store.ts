@@ -37,6 +37,12 @@ export async function findGhlUserByEmail(email: string): Promise<{ ok: boolean; 
   const match = (data.users || []).find(
     (u: any) => !u.deleted && String(u.email || '').toLowerCase() === email.toLowerCase()
   );
+  // Dueño de la agencia: puede entrar a cualquier instalación de un cliente aunque no sea usuario de esa
+  // subcuenta de GHL. Se define con AGENCY_OWNER_EMAILS (y AGENCY_OWNER_PHONE para recibir el código SMS).
+  const owners = (process.env.AGENCY_OWNER_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+  if (!match && owners.includes(email.toLowerCase())) {
+    return { ok: true, nombre: process.env.AGENCY_OWNER_NAME || 'Dueño de agencia', phone: process.env.AGENCY_OWNER_PHONE || '', rol: 'Dueño de agencia' };
+  }
   const t = match?.roles?.type;
   const r = match?.roles?.role;
   const rol = t === 'agency' ? 'Dueño de agencia' : r === 'admin' ? 'Administrador' : 'Usuario';

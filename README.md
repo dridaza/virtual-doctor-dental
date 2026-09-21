@@ -16,6 +16,8 @@ Crea un archivo `.env.local` con las variables de entorno (nunca se sube a git):
 | `GHL_API_KEY`, `GHL_LOCATION_ID`, `GHL_INTAKE_FIELD_ID` | Conexión con la cuenta de GHL |
 | `GHL_BASE_URL`, `GHL_API_VERSION` | API de GHL (por defecto `https://services.leadconnectorhq.com`, `v3`) |
 | `SESSION_SECRET` | Firma de sesiones y enlaces personales del formulario |
+| `AGENCY_OWNER_EMAILS`, `AGENCY_OWNER_PHONE`, `AGENCY_OWNER_NAME` | Dueño de la agencia: entra a cualquier instalación sin ser usuario de esa cuenta de GHL (el código SMS llega a `AGENCY_OWNER_PHONE`, que debe existir como contacto en esa cuenta) |
+| `NEXT_PUBLIC_CLINIC_LOGO` | Ruta del logo dentro de `public/` (`none` = sin logo) |
 | `NEXT_PUBLIC_CLINIC_NAME`, `_ADDRESS`, `_PHONE`, `_WEBSITE` | Datos de la clínica en membretes e impresiones |
 | `EDIT_LOCK_DAYS` | Días para cerrar registros de Seguimiento (45 por defecto, `0` = sin cierre) |
 
