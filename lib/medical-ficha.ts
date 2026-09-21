@@ -1,223 +1,137 @@
-// Historia clínica del módulo Medicina, siguiendo la estructura del expediente clínico de la
-// NOM-004-SSA3-2012: ficha de identificación, padecimiento actual, antecedentes (heredofamiliares,
-// personales no patológicos y patológicos, gineco-obstétricos), interrogatorio por aparatos y sistemas,
-// exploración física, estudios, diagnósticos, plan de tratamiento y pronóstico.
+// Historia clínica del módulo Medicina: copia del formato "Historia clínica" del Dr. José Daza
+// (Boston Medical & Aesthetics, cirugía plástica, estética y reconstructiva).
 //
-// Los datos básicos (nombre, teléfono, correo, fecha de nacimiento) viven en el contacto de GHL; el motivo
-// de consulta usa `motivoConsulta` de la ficha general.
+// Página 1: datos personales, antecedentes médicos personales (Sí/No + detalle), motivo de consulta y
+// exploración física. Página 2: esquemas (rostro, cuerpo, nariz y plano del implante mamario) para marcar,
+// diagnóstico, plan y firma del médico. Nombre, teléfono, correo, domicilio y fecha de nacimiento viven en el
+// contacto de GHL; "recomendado por" usa `referidoPor` y el motivo principal usa `motivoConsulta`.
 
-type Rows = readonly (readonly [string, string])[];
-
-export const HEREDOFAMILIARES: Rows = [
-  ['diabetes', 'Diabetes'],
-  ['hipertension', 'Hipertensión arterial'],
-  ['cardiopatia', 'Cardiopatía'],
-  ['cancer', 'Cáncer'],
-  ['obesidad', 'Obesidad'],
-  ['renal', 'Enfermedad renal'],
-  ['tiroides', 'Enfermedad de tiroides'],
-  ['mental', 'Enfermedad mental'],
-  ['epilepsia', 'Epilepsia'],
-  ['alergias', 'Alergias'],
+export const ANTECEDENTES: readonly (readonly [string, string, string])[] = [
+  // clave, pregunta, etiqueta del detalle
+  ['familia', '¿Enfermedades en su familia?', '¿Cuáles?'],
+  ['enfermedad', '¿Padece usted de alguna enfermedad?', '¿Cuáles?'],
+  ['alergia', '¿Tienes algún tipo de alergia?', '¿Cuáles?'],
+  ['fuma', '¿Fuma o bebe?', '¿Cuántos al día?'],
+  ['transfusion', '¿Le transfundieron sangre alguna vez?', '¿Cuándo?'],
+  ['medicamento', '¿Toma algún medicamento?', '¿Cuál?'],
+  ['deporte', '¿Practica algún deporte?', '¿Cuál?'],
+  ['operado', '¿Ha sido operado(a) alguna vez?', '¿De qué?'],
+  ['accidentes', '¿Ha tenido accidentes?', '¿Cuáles?'],
 ];
 
-export const PATOLOGICOS: Rows = [
-  ['diabetes', 'Diabetes'],
-  ['hipertension', 'Hipertensión arterial'],
-  ['cardiopatia', 'Cardiopatía'],
-  ['asma', 'Asma / EPOC'],
-  ['tiroides', 'Enfermedad de tiroides'],
-  ['renal', 'Enfermedad renal'],
-  ['hepatica', 'Enfermedad hepática'],
-  ['gastritis', 'Gastritis / reflujo'],
-  ['epilepsia', 'Epilepsia'],
-  ['cancer', 'Cáncer'],
-  ['vih', 'VIH / inmunosupresión'],
-  ['tuberculosis', 'Tuberculosis'],
-  ['covid', 'COVID-19'],
-  ['depresion', 'Depresión / ansiedad'],
+export const EXPLORACION_CAMPOS: readonly (readonly [string, string])[] = [
+  ['peso', 'Peso'],
+  ['estatura', 'Estatura'],
+  ['tallaBra', 'Talla bra'],
+  ['tallaPantalon', 'Talla pantalón'],
+  ['ta', 'TA'],
+  ['fc', 'FC'],
+  ['fr', 'FR'],
+  ['temp', 'Temp'],
 ];
 
-export const APARATOS: Rows = [
-  ['general', 'Síntomas generales'],
-  ['cardiovascular', 'Cardiovascular'],
-  ['respiratorio', 'Respiratorio'],
-  ['digestivo', 'Digestivo'],
-  ['genitourinario', 'Genitourinario'],
-  ['musculoesqueletico', 'Musculoesquelético'],
-  ['neurologico', 'Neurológico'],
-  ['endocrino', 'Endocrino'],
-  ['piel', 'Piel y anexos'],
-  ['hematologico', 'Hematológico y linfático'],
-  ['psiquiatrico', 'Psiquiátrico'],
-  ['sentidos', 'Órganos de los sentidos'],
+export const SEXOS: readonly (readonly [string, string])[] = [
+  ['M', 'M'],
+  ['F', 'F'],
 ];
 
-export const EXPLORACION: Rows = [
-  ['habitus', 'Habitus exterior'],
-  ['cabezaCuello', 'Cabeza y cuello'],
-  ['torax', 'Tórax (cardiopulmonar)'],
-  ['abdomen', 'Abdomen'],
-  ['extremidades', 'Extremidades'],
-  ['neurologico', 'Neurológico'],
-  ['piel', 'Piel y tegumentos'],
-  ['genitales', 'Genitales'],
-];
+export type Antecedente = { si: '' | 'si' | 'no'; detalle: string };
 
-export const NO_PATOLOGICOS: Rows = [
-  ['tabaquismo', 'Tabaquismo'],
-  ['alcohol', 'Alcoholismo'],
-  ['drogas', 'Otras sustancias'],
-  ['ejercicio', 'Actividad física'],
-  ['alimentacion', 'Alimentación'],
-  ['sueno', 'Sueño'],
-  ['vacunas', 'Vacunación'],
-];
-
-export const GINECO: Rows = [
-  ['menarca', 'Menarca (edad)'],
-  ['fur', 'Fecha de última menstruación'],
-  ['gestas', 'Gestas'],
-  ['partos', 'Partos'],
-  ['cesareas', 'Cesáreas'],
-  ['abortos', 'Abortos'],
-  ['anticonceptivos', 'Método anticonceptivo'],
-];
-
-export const SIGNOS: Rows = [
-  ['ta', 'T/A (mmHg)'],
-  ['fc', 'FC (lpm)'],
-  ['fr', 'FR (rpm)'],
-  ['temp', 'Temp. (°C)'],
-  ['spo2', 'SpO₂ (%)'],
-  ['peso', 'Peso (kg)'],
-  ['talla', 'Talla (cm)'],
-  ['glucosa', 'Glucosa (mg/dL)'],
-];
-
-export const SEXOS: Rows = [
-  ['F', 'Femenino'],
-  ['M', 'Masculino'],
-  ['otro', 'Otro'],
-];
+// Marcas dibujadas por el médico sobre los esquemas: coordenadas en el espacio de la imagen (ESQUEMA_W x ESQUEMA_H).
+export const ESQUEMA_W = 1300;
+export const ESQUEMA_H = 888;
+export const ESQUEMA_COLORES = ['#d7362f', '#0a84ff', '#1d1d1f'] as const;
+export type Trazo = { c: string; w: number; p: number[] }; // p = [x1, y1, x2, y2, ...]
 
 export type MedicalFicha = {
-  // Identificación adicional (paciente)
+  // Datos personales (los llena el paciente)
   sexo: string;
+  pais: string;
   estadoCivil: string;
-  escolaridad: string;
   ocupacion: string;
-  tipoSangre: string;
-  emergenciaNombre: string;
-  emergenciaTel: string;
-  // Padecimiento actual y antecedentes (paciente)
-  padecimientoActual: string;
-  heredofamiliares: Record<string, boolean>;
-  heredofamiliaresOtros: string;
-  noPatologicos: Record<string, string>;
-  patologicos: Record<string, boolean>;
-  cirugias: string;
-  hospitalizaciones: string;
-  transfusiones: string;
-  traumatismos: string;
-  alergiasMedicamentos: string;
-  alergiasOtras: string;
-  medicamentosActuales: string;
-  gineco: Record<string, string>;
-  embarazoActual: '' | 'si' | 'no';
-  // Del profesional
-  aparatos: Record<string, string>;
-  signos: Record<string, string>;
+  acompanante: string;
+  // Antecedentes médicos personales (los llena el paciente)
+  antecedentes: Record<string, Antecedente>;
+  embarazos: { e: string; p: string; a: string; c: string };
+  // Motivo de consulta (los llena el paciente; el motivo principal es `motivoConsulta`)
+  procedimientoDeseado: string;
+  procedimientosPrevios: string;
+  // Del médico
+  fechaHistoria: string;
   exploracion: Record<string, string>;
-  estudios: string;
-  diagnosticos: string;
+  esquema: Trazo[]; // marcas del médico sobre los esquemas
+  diagnostico: string;
   plan: string;
-  pronostico: string;
-  indicaciones: string;
 };
 
 export type MedicalPaciente = Pick<
   MedicalFicha,
-  | 'sexo' | 'estadoCivil' | 'escolaridad' | 'ocupacion' | 'tipoSangre' | 'emergenciaNombre' | 'emergenciaTel'
-  | 'padecimientoActual' | 'heredofamiliares' | 'heredofamiliaresOtros' | 'noPatologicos' | 'patologicos'
-  | 'cirugias' | 'hospitalizaciones' | 'transfusiones' | 'traumatismos' | 'alergiasMedicamentos' | 'alergiasOtras'
-  | 'medicamentosActuales' | 'gineco' | 'embarazoActual'
+  'sexo' | 'pais' | 'estadoCivil' | 'ocupacion' | 'acompanante' | 'antecedentes' | 'embarazos' | 'procedimientoDeseado' | 'procedimientosPrevios'
 >;
 
-const boolMap = (rows: Rows) => Object.fromEntries(rows.map(([k]) => [k, false])) as Record<string, boolean>;
-const strMap = (rows: Rows) => Object.fromEntries(rows.map(([k]) => [k, ''])) as Record<string, string>;
+const antecedentesVacios = (): Record<string, Antecedente> =>
+  Object.fromEntries(ANTECEDENTES.map(([k]) => [k, { si: '' as const, detalle: '' }]));
+const exploracionVacia = (): Record<string, string> => Object.fromEntries(EXPLORACION_CAMPOS.map(([k]) => [k, '']));
 
 export function defaultMedical(): MedicalFicha {
   return {
-    sexo: '', estadoCivil: '', escolaridad: '', ocupacion: '', tipoSangre: '', emergenciaNombre: '', emergenciaTel: '',
-    padecimientoActual: '',
-    heredofamiliares: boolMap(HEREDOFAMILIARES), heredofamiliaresOtros: '',
-    noPatologicos: strMap(NO_PATOLOGICOS),
-    patologicos: boolMap(PATOLOGICOS),
-    cirugias: '', hospitalizaciones: '', transfusiones: '', traumatismos: '',
-    alergiasMedicamentos: '', alergiasOtras: '', medicamentosActuales: '',
-    gineco: strMap(GINECO), embarazoActual: '',
-    aparatos: strMap(APARATOS), signos: strMap(SIGNOS), exploracion: strMap(EXPLORACION),
-    estudios: '', diagnosticos: '', plan: '', pronostico: '', indicaciones: '',
+    sexo: '', pais: '', estadoCivil: '', ocupacion: '', acompanante: '',
+    antecedentes: antecedentesVacios(),
+    embarazos: { e: '', p: '', a: '', c: '' },
+    procedimientoDeseado: '', procedimientosPrevios: '',
+    fechaHistoria: '',
+    exploracion: exploracionVacia(),
+    esquema: [], diagnostico: '', plan: '',
   };
 }
 
 const str = (v: unknown, max = 500): string => (typeof v === 'string' ? v.slice(0, max) : '');
 
-function pickBool(rows: Rows, source: unknown): Record<string, boolean> {
-  const src = (source && typeof source === 'object' ? source : {}) as Record<string, unknown>;
-  return Object.fromEntries(rows.map(([k]) => [k, src[k] === true]));
-}
-function pickStr(rows: Rows, source: unknown, max = 500): Record<string, string> {
-  const src = (source && typeof source === 'object' ? source : {}) as Record<string, unknown>;
-  return Object.fromEntries(rows.map(([k]) => [k, str(src[k], max)]));
-}
-
 // Mezcla sin fiarse de la forma de los datos: solo se conservan las claves y tipos conocidos.
 export function mergeMedical(partial: unknown): MedicalFicha {
   if (!partial || typeof partial !== 'object') return defaultMedical();
-  const p = partial as Record<string, unknown>;
+  const p = partial as Record<string, any>;
+  const ant = (p.antecedentes && typeof p.antecedentes === 'object' ? p.antecedentes : {}) as Record<string, any>;
+  const emb = (p.embarazos && typeof p.embarazos === 'object' ? p.embarazos : {}) as Record<string, unknown>;
+  const exp = (p.exploracion && typeof p.exploracion === 'object' ? p.exploracion : {}) as Record<string, unknown>;
+  const trazos: Trazo[] = [];
+  let puntos = 0;
+  for (const t of Array.isArray(p.esquema) ? p.esquema.slice(0, 400) : []) {
+    if (!t || !Array.isArray(t.p)) continue;
+    const pts = (t.p as unknown[]).filter((n) => typeof n === 'number' && Number.isFinite(n)).slice(0, 4000) as number[];
+    if (pts.length < 2 || puntos + pts.length > 40000) continue;
+    puntos += pts.length;
+    trazos.push({
+      c: (ESQUEMA_COLORES as readonly string[]).includes(t.c) ? t.c : ESQUEMA_COLORES[0],
+      w: Math.min(12, Math.max(1, Number(t.w) || 3)),
+      p: pts.map((n) => Math.round(n)),
+    });
+  }
   return {
-    sexo: SEXOS.some(([k]) => k === p.sexo) ? (p.sexo as string) : '',
+    sexo: p.sexo === 'M' || p.sexo === 'F' ? p.sexo : '',
+    pais: str(p.pais, 80),
     estadoCivil: str(p.estadoCivil, 60),
-    escolaridad: str(p.escolaridad, 80),
     ocupacion: str(p.ocupacion),
-    tipoSangre: str(p.tipoSangre, 10),
-    emergenciaNombre: str(p.emergenciaNombre),
-    emergenciaTel: str(p.emergenciaTel, 40),
-    padecimientoActual: str(p.padecimientoActual, 3000),
-    heredofamiliares: pickBool(HEREDOFAMILIARES, p.heredofamiliares),
-    heredofamiliaresOtros: str(p.heredofamiliaresOtros),
-    noPatologicos: pickStr(NO_PATOLOGICOS, p.noPatologicos),
-    patologicos: pickBool(PATOLOGICOS, p.patologicos),
-    cirugias: str(p.cirugias, 1000),
-    hospitalizaciones: str(p.hospitalizaciones, 1000),
-    transfusiones: str(p.transfusiones, 500),
-    traumatismos: str(p.traumatismos, 1000),
-    alergiasMedicamentos: str(p.alergiasMedicamentos, 1000),
-    alergiasOtras: str(p.alergiasOtras, 1000),
-    medicamentosActuales: str(p.medicamentosActuales, 1000),
-    gineco: pickStr(GINECO, p.gineco, 100),
-    embarazoActual: p.embarazoActual === 'si' || p.embarazoActual === 'no' ? p.embarazoActual : '',
-    aparatos: pickStr(APARATOS, p.aparatos, 1500),
-    signos: pickStr(SIGNOS, p.signos, 30),
-    exploracion: pickStr(EXPLORACION, p.exploracion, 1500),
-    estudios: str(p.estudios, 4000),
-    diagnosticos: str(p.diagnosticos, 3000),
+    acompanante: str(p.acompanante),
+    antecedentes: Object.fromEntries(
+      ANTECEDENTES.map(([k]) => [k, { si: ant[k]?.si === 'si' || ant[k]?.si === 'no' ? ant[k].si : '', detalle: str(ant[k]?.detalle, 1000) }])
+    ) as Record<string, Antecedente>,
+    embarazos: { e: str(emb.e, 5), p: str(emb.p, 5), a: str(emb.a, 5), c: str(emb.c, 5) },
+    procedimientoDeseado: str(p.procedimientoDeseado, 1500),
+    procedimientosPrevios: str(p.procedimientosPrevios, 1500),
+    fechaHistoria: str(p.fechaHistoria, 40),
+    exploracion: Object.fromEntries(EXPLORACION_CAMPOS.map(([k]) => [k, str(exp[k], 30)])),
+    esquema: trazos,
+    diagnostico: str(p.diagnostico, 4000),
     plan: str(p.plan, 4000),
-    pronostico: str(p.pronostico, 1500),
-    indicaciones: str(p.indicaciones, 3000),
   };
 }
 
 export function pickPacienteMedical(m: MedicalFicha): MedicalPaciente {
   return {
-    sexo: m.sexo, estadoCivil: m.estadoCivil, escolaridad: m.escolaridad, ocupacion: m.ocupacion, tipoSangre: m.tipoSangre,
-    emergenciaNombre: m.emergenciaNombre, emergenciaTel: m.emergenciaTel,
-    padecimientoActual: m.padecimientoActual, heredofamiliares: m.heredofamiliares, heredofamiliaresOtros: m.heredofamiliaresOtros,
-    noPatologicos: m.noPatologicos, patologicos: m.patologicos, cirugias: m.cirugias, hospitalizaciones: m.hospitalizaciones,
-    transfusiones: m.transfusiones, traumatismos: m.traumatismos, alergiasMedicamentos: m.alergiasMedicamentos,
-    alergiasOtras: m.alergiasOtras, medicamentosActuales: m.medicamentosActuales, gineco: m.gineco, embarazoActual: m.embarazoActual,
+    sexo: m.sexo, pais: m.pais, estadoCivil: m.estadoCivil, ocupacion: m.ocupacion, acompanante: m.acompanante,
+    antecedentes: m.antecedentes, embarazos: m.embarazos,
+    procedimientoDeseado: m.procedimientoDeseado, procedimientosPrevios: m.procedimientosPrevios,
   };
 }
 
@@ -225,7 +139,7 @@ export function defaultMedicalPaciente(): MedicalPaciente {
   return pickPacienteMedical(defaultMedical());
 }
 
-// Aplica lo que llenó el paciente sin tocar jamás lo del profesional (aparatos, exploración, estudios, diagnósticos, plan).
+// Aplica lo que llenó el paciente sin tocar jamás lo del médico (exploración, esquemas, diagnóstico y plan).
 export function applyMedicalPaciente(current: MedicalFicha, incoming: unknown): MedicalFicha {
   return { ...current, ...pickPacienteMedical(mergeMedical(incoming)) };
 }
@@ -233,35 +147,23 @@ export function applyMedicalPaciente(current: MedicalFicha, incoming: unknown): 
 // Fusión de duplicados: lo ya presente en `primary` nunca se sobrescribe.
 export function fillMedicalGaps(primary: MedicalFicha, secondary: MedicalFicha): MedicalFicha {
   const s = (a: string, b: string) => (a && a.trim() ? a : b || a);
-  const or = (a: Record<string, boolean>, b: Record<string, boolean>) => Object.fromEntries(Object.keys(a).map((k) => [k, !!(a[k] || b[k])]));
-  const sm = (a: Record<string, string>, b: Record<string, string>) => Object.fromEntries(Object.keys(a).map((k) => [k, s(a[k], b[k] || '')]));
   return {
     ...primary,
-    sexo: s(primary.sexo, secondary.sexo), estadoCivil: s(primary.estadoCivil, secondary.estadoCivil),
-    escolaridad: s(primary.escolaridad, secondary.escolaridad), ocupacion: s(primary.ocupacion, secondary.ocupacion),
-    tipoSangre: s(primary.tipoSangre, secondary.tipoSangre), emergenciaNombre: s(primary.emergenciaNombre, secondary.emergenciaNombre),
-    emergenciaTel: s(primary.emergenciaTel, secondary.emergenciaTel), padecimientoActual: s(primary.padecimientoActual, secondary.padecimientoActual),
-    heredofamiliares: or(primary.heredofamiliares, secondary.heredofamiliares),
-    heredofamiliaresOtros: s(primary.heredofamiliaresOtros, secondary.heredofamiliaresOtros),
-    noPatologicos: sm(primary.noPatologicos, secondary.noPatologicos),
-    patologicos: or(primary.patologicos, secondary.patologicos),
-    cirugias: s(primary.cirugias, secondary.cirugias), hospitalizaciones: s(primary.hospitalizaciones, secondary.hospitalizaciones),
-    transfusiones: s(primary.transfusiones, secondary.transfusiones), traumatismos: s(primary.traumatismos, secondary.traumatismos),
-    alergiasMedicamentos: s(primary.alergiasMedicamentos, secondary.alergiasMedicamentos),
-    alergiasOtras: s(primary.alergiasOtras, secondary.alergiasOtras),
-    medicamentosActuales: s(primary.medicamentosActuales, secondary.medicamentosActuales),
-    gineco: sm(primary.gineco, secondary.gineco), embarazoActual: primary.embarazoActual || secondary.embarazoActual,
-    aparatos: sm(primary.aparatos, secondary.aparatos), signos: sm(primary.signos, secondary.signos),
-    exploracion: sm(primary.exploracion, secondary.exploracion),
-    estudios: s(primary.estudios, secondary.estudios), diagnosticos: s(primary.diagnosticos, secondary.diagnosticos),
-    plan: s(primary.plan, secondary.plan), pronostico: s(primary.pronostico, secondary.pronostico),
-    indicaciones: s(primary.indicaciones, secondary.indicaciones),
+    sexo: primary.sexo || secondary.sexo,
+    pais: s(primary.pais, secondary.pais),
+    estadoCivil: s(primary.estadoCivil, secondary.estadoCivil),
+    ocupacion: s(primary.ocupacion, secondary.ocupacion),
+    acompanante: s(primary.acompanante, secondary.acompanante),
+    antecedentes: Object.fromEntries(
+      ANTECEDENTES.map(([k]) => [k, { si: primary.antecedentes[k].si || secondary.antecedentes[k].si, detalle: s(primary.antecedentes[k].detalle, secondary.antecedentes[k].detalle) }])
+    ) as Record<string, Antecedente>,
+    embarazos: { e: s(primary.embarazos.e, secondary.embarazos.e), p: s(primary.embarazos.p, secondary.embarazos.p), a: s(primary.embarazos.a, secondary.embarazos.a), c: s(primary.embarazos.c, secondary.embarazos.c) },
+    procedimientoDeseado: s(primary.procedimientoDeseado, secondary.procedimientoDeseado),
+    procedimientosPrevios: s(primary.procedimientosPrevios, secondary.procedimientosPrevios),
+    fechaHistoria: s(primary.fechaHistoria, secondary.fechaHistoria),
+    exploracion: Object.fromEntries(EXPLORACION_CAMPOS.map(([k]) => [k, s(primary.exploracion[k], secondary.exploracion[k])])),
+    esquema: primary.esquema.length ? primary.esquema : secondary.esquema,
+    diagnostico: s(primary.diagnostico, secondary.diagnostico),
+    plan: s(primary.plan, secondary.plan),
   };
-}
-
-export function imc(pesoKg: string, tallaCm: string): string {
-  const p = parseFloat(pesoKg.replace(',', '.'));
-  const t = parseFloat(tallaCm.replace(',', '.')) / 100;
-  if (!(p > 0) || !(t > 0)) return '';
-  return (p / (t * t)).toFixed(1);
 }

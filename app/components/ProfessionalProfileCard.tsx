@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { moduleConfig } from '@/lib/modules';
 
-type Profile = { nombre: string; titulo: string; cedula: string; institucion: string; cedulaEspecialidad: string };
+type Profile = { nombre: string; titulo: string; cedula: string; institucion: string; cedulaEspecialidad: string; credenciales: string };
 
 export default function ProfessionalProfileCard() {
-  const [p, setP] = useState<Profile>({ nombre: '', titulo: '', cedula: '', institucion: '', cedulaEspecialidad: '' });
+  const [p, setP] = useState<Profile>({ nombre: '', titulo: '', cedula: '', institucion: '', cedulaEspecialidad: '', credenciales: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -52,6 +52,7 @@ export default function ProfessionalProfileCard() {
           <label className="field"><span>Cédula profesional</span><input id="prof-cedula" value={p.cedula} onChange={set('cedula')} /></label>
           <label className="field"><span>Institución que expidió el título</span><input id="prof-inst" value={p.institucion} onChange={set('institucion')} placeholder="Universidad…" /></label>
           <label className="field"><span>Cédula de especialidad (opcional)</span><input id="prof-cedesp" value={p.cedulaEspecialidad} onChange={set('cedulaEspecialidad')} /></label>
+          <label className="field" style={{ gridColumn: '1 / -1' }}><span>Credenciales adicionales para el membrete (una por línea, opcional)</span><textarea id="prof-cred" rows={3} value={p.credenciales} onChange={(e) => setP({ ...p, credenciales: e.target.value })} placeholder={'Ced. Esp. Plástica: 0000000 • Ced. AMCPER: 0000'} /></label>
           <div style={{ gridColumn: '1 / -1' }}>
             {msg && <p className={msg.ok ? 'hint' : 'status-line error'}>{msg.text}</p>}
             <button type="submit" className="primary" disabled={saving}>{saving ? 'Guardando…' : 'Guardar datos profesionales'}</button>

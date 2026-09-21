@@ -1828,3 +1828,44 @@ button.tint-amber:hover, .button.tint-amber:hover { background: linear-gradient(
   .public-form-page .spa-alertas { grid-column: 1 / -1; }
   .public-form-page .spa-alertas .checkrow { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px 10px; }
 }
+
+/* ===== Historia clínica médica: réplica del formato del Dr. José Daza ===== */
+.print-page.theme-medical { --accent: #76408f; --accent-weak: #eadff2; }
+.med-doc { --med: #76408f; --med-weak: #eadff2; font-size: 9.5pt; }
+.med-title-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2px; }
+.med-title { margin: 0; flex: 1; text-align: center; font-size: 22pt; font-weight: 800; color: var(--med); letter-spacing: -0.01em; }
+.med-fecha { font-size: 9.5pt; white-space: nowrap; }
+.med-h { margin: 10px 0 5px; padding-bottom: 2px; font-size: 12pt; font-weight: 800; color: var(--med); border-bottom: 1.5px solid var(--med); }
+.med-row { display: flex; gap: 14px; }
+.med-row > .med-line { flex: 1; }
+.med-line { display: flex; align-items: flex-end; gap: 6px; margin: 4px 0; border-bottom: 1px solid var(--med); min-height: 17px; }
+.med-line-label { white-space: nowrap; }
+.med-line-value { flex: 1; font-weight: 600; }
+.med-radio { margin-right: 8px; }
+.med-ant { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+.med-ant-cell { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; min-height: 42px; }
+.med-ant-cell.band { background: var(--med-weak); }
+.med-ant-q { flex: 1; line-height: 1.25; }
+.med-ant-d { font-size: 8.5pt; }
+.med-yn { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.med-box { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 1px solid var(--med); margin-left: 4px; font-weight: 700; }
+.med-box.wide { width: 24px; }
+.med-q { margin: 8px 0; }
+.med-a { min-height: 34px; border-bottom: 1px solid var(--med); margin: 3px 0 0 14px; white-space: pre-wrap; }
+.med-exp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 14px; padding: 8px 10px; background: var(--med); color: #fff; border-radius: 4px; }
+.med-exp-cell { display: flex; align-items: center; gap: 6px; }
+.med-exp-cell > span:first-child { white-space: nowrap; }
+.med-pill { flex: 1; min-height: 18px; padding: 0 8px; border-radius: 999px; background: #fff; color: #111; }
+.med-page2 { break-before: page; page-break-before: always; padding-top: 6px; }
+.med-dp { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--med); margin-top: 8px; }
+.med-dp-box { min-height: 260px; padding: 0 8px 8px; }
+.med-dp-box + .med-dp-box { border-left: 1px solid var(--med); }
+.med-dp-box h3 { margin: 6px 0; color: var(--med); font-size: 11pt; }
+.med-dp-text { white-space: pre-wrap; }
+.med-firmas { display: flex; justify-content: center; gap: 60px; margin-top: 18px; text-align: center; }
+.med-firma { width: 240px; }
+.med-firma-line { border-top: 1px solid var(--med); margin: 2px 0 3px; }
+@media print {
+  .med-exp { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .med-ant-cell.band, .med-pill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

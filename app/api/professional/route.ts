@@ -29,6 +29,7 @@ export async function PUT(request: Request) {
       cedula: clean(b.cedula, 40),
       institucion: clean(b.institucion),
       cedulaEspecialidad: clean(b.cedulaEspecialidad, 40),
+      credenciales: clean(b.credenciales, 600),
     };
     await saveProfessionalProfile(profile);
     await logEvent('perfil_profesional_actualizado', '', email);

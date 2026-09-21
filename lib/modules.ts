@@ -19,6 +19,7 @@ export type ModuleConfig = {
   conceptoRecibo: string;
   paquetes: boolean;
   recetas: boolean;
+  credencialesMembrete: boolean; // cédulas y credenciales en el membrete impreso
   clientes: boolean; // llamar "clientes" a quienes se atienden
 };
 
@@ -26,17 +27,17 @@ const MODULES: Record<ModuleId, ModuleConfig> = {
   dental: {
     id: 'dental', label: 'Dental', odontograma: true, habitosDentales: true, tituloEjemplo: 'Cirujano Dentista',
     piezaLabel: 'Pieza', piezaEjemplo: '14', materialLabel: 'Material', materialLista: true, tratamientoEjemplo: 'Ej. Obturación',
-    visitaHint: 'Qué se hizo, en qué pieza y con qué material.', conceptoRecibo: 'Consulta / tratamiento dental', paquetes: false, recetas: true, clientes: false,
+    visitaHint: 'Qué se hizo, en qué pieza y con qué material.', conceptoRecibo: 'Consulta / tratamiento dental', paquetes: false, recetas: true, clientes: false, credencialesMembrete: false,
   },
   spa: {
     id: 'spa', label: 'Spa', odontograma: false, habitosDentales: false, tituloEjemplo: 'Cosmiatra / Esteticista',
     piezaLabel: 'Zona', piezaEjemplo: 'Rostro', materialLabel: 'Producto / equipo', materialLista: false, tratamientoEjemplo: 'Ej. Peeling superficial',
-    visitaHint: 'Qué se hizo, en qué zona y con qué producto o equipo.', conceptoRecibo: 'Consulta / tratamiento estético', paquetes: true, recetas: false, clientes: true,
+    visitaHint: 'Qué se hizo, en qué zona y con qué producto o equipo.', conceptoRecibo: 'Consulta / tratamiento estético', paquetes: true, recetas: false, clientes: true, credencialesMembrete: false,
   },
   medical: {
     id: 'medical', label: 'Medicina', odontograma: false, habitosDentales: false, tituloEjemplo: 'Médico Cirujano',
     piezaLabel: 'Zona', piezaEjemplo: 'Abdomen', materialLabel: 'Material / medicamento', materialLista: false, tratamientoEjemplo: 'Ej. Consulta de control',
-    visitaHint: 'Qué se hizo, en qué zona y con qué material o medicamento.', conceptoRecibo: 'Consulta médica', paquetes: false, recetas: true, clientes: false,
+    visitaHint: 'Qué se hizo, en qué zona y con qué material o medicamento.', conceptoRecibo: 'Consulta médica', paquetes: false, recetas: true, clientes: false, credencialesMembrete: true,
   },
 };
 

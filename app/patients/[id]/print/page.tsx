@@ -81,6 +81,21 @@ export default function PrintPage() {
   const [saldoActual, setSaldoActual] = useState(0);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [ready, setReady] = useState(false);
+  const [credLines, setCredLines] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!moduleConfig.credencialesMembrete) return;
+    fetch('/api/professional').then((r) => r.json()).then((d) => {
+      const pr = d.profile;
+      if (!pr) return;
+      const lines = [
+        [pr.cedula && `Ced. Profesional: ${pr.cedula}`, pr.cedulaEspecialidad && `Ced. Esp.: ${pr.cedulaEspecialidad}`].filter(Boolean).join(' • '),
+        pr.institucion || '',
+        ...String(pr.credenciales || '').split('\n'),
+      ].map((l: string) => l.trim()).filter(Boolean);
+      setCredLines(lines);
+    });
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -104,13 +119,13 @@ export default function PrintPage() {
   }
 
   return (
-    <div className="print-page">
+    <div className={'print-page' + (moduleConfig.id === 'medical' ? ' theme-medical' : '')}>
       <div className="no-print">
         <button className="primary" onClick={() => window.print()}>Imprimir / Guardar PDF</button>
       </div>
 
       <div className="print-sheet">
-      <PrintHeader patient={patient} sheetTitle="Historia clínica" />
+      <PrintHeader extra={credLines} patient={patient} sheetTitle="Historia clínica" />
 
       {moduleConfig.id === 'spa' ? (
         <SpaPrintBody patient={patient} intake={intake} />
@@ -261,7 +276,7 @@ export default function PrintPage() {
       </div>
 
       <div className="print-sheet">
-        <PrintHeader patient={patient} sheetTitle="Seguimiento" />
+        <PrintHeader extra={credLines} patient={patient} sheetTitle="Seguimiento" />
         <section className="print-block">
           <h2>Seguimiento</h2>
           <table className="print-table">
@@ -295,7 +310,7 @@ export default function PrintPage() {
       </div>
 
       <div className="print-sheet">
-        <PrintHeader patient={patient} sheetTitle="Facturación" />
+        <PrintHeader extra={credLines} patient={patient} sheetTitle="Facturación" />
         <section className="print-block">
           <h2>Facturación</h2>
           <table className="print-table">
@@ -330,7 +345,7 @@ export default function PrintPage() {
       </div>
 
       <div className="print-sheet">
-        <PrintHeader patient={patient} sheetTitle="Citas" />
+        <PrintHeader extra={credLines} patient={patient} sheetTitle="Citas" />
         <section className="print-block">
           <h2>Citas</h2>
           <table className="print-table">
@@ -364,6 +379,6 @@ export default function PrintPage() {
   );
 }
 
-function PrintHeader({ patient, sheetTitle }: { patient: Patient; sheetTitle: string }) {
-  return <PrintLetterhead title={`Historia Clínica — ${sheetTitle}`} patientLine={`${patient.name} · ${patient.numeroHistoriaClinica}`} />;
+function PrintHeader({ patient, sheetTitle, extra }: { patient: Patient; sheetTitle: string; extra?: string[] }) {
+  return <PrintLetterhead title={sheetTitle === 'Historia clínica' ? sheetTitle : `Historia Clínica — ${sheetTitle}`} patientLine={`${patient.name} · ${patient.numeroHistoriaClinica}`} extraLines={extra} />;
 }

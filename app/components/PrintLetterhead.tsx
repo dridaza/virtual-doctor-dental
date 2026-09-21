@@ -1,4 +1,4 @@
-export default function PrintLetterhead({ title, patientLine }: { title: string; patientLine?: string }) {
+export default function PrintLetterhead({ title, patientLine, extraLines }: { title: string; patientLine?: string; extraLines?: string[] }) {
   const nombre = process.env.NEXT_PUBLIC_CLINIC_NAME;
   const direccion = process.env.NEXT_PUBLIC_CLINIC_ADDRESS;
   const telefono = process.env.NEXT_PUBLIC_CLINIC_PHONE;
@@ -11,6 +11,7 @@ export default function PrintLetterhead({ title, patientLine }: { title: string;
         <div className="print-lh-text">
           {nombre && <div className="print-clinic-name">{nombre}</div>}
           {meta && <div className="print-clinic-meta">{meta}</div>}
+          {(extraLines || []).map((l, i) => <div key={i} className="print-clinic-meta">{l}</div>)}
           <div className="print-letterhead-title">
             {title}
             {patientLine && <span className="print-lh-patient"> · {patientLine}</span>}

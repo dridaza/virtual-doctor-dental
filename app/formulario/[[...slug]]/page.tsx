@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { GINECO, HEREDOFAMILIARES, MedicalPaciente, NO_PATOLOGICOS, PATOLOGICOS, SEXOS, mergeMedical, pickPacienteMedical } from '@/lib/medical-ficha';
+import { ANTECEDENTES, MedicalPaciente, mergeMedical, pickPacienteMedical } from '@/lib/medical-ficha';
 import { ALERTAS_SPA, mergeSpa, pickPaciente, SpaPaciente } from '@/lib/spa-ficha';
 import { moduleConfig } from '@/lib/modules';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -257,8 +257,11 @@ export default function FormularioPage() {
   function setMed<K extends keyof MedicalPaciente>(key: K, v: MedicalPaciente[K]) {
     setQ((prev) => ({ ...prev, medical: { ...prev.medical, [key]: v } }));
   }
-  function setMedMap(key: 'heredofamiliares' | 'patologicos' | 'noPatologicos' | 'gineco', k: string, v: boolean | string) {
-    setQ((prev) => ({ ...prev, medical: { ...prev.medical, [key]: { ...(prev.medical[key] as Record<string, unknown>), [k]: v } } }));
+  function setMedAnt(k: string, patch: Partial<{ si: '' | 'si' | 'no'; detalle: string }>) {
+    setQ((prev) => ({ ...prev, medical: { ...prev.medical, antecedentes: { ...prev.medical.antecedentes, [k]: { ...prev.medical.antecedentes[k], ...patch } } } }));
+  }
+  function setMedEmb(k: 'e' | 'p' | 'a' | 'c', v: string) {
+    setQ((prev) => ({ ...prev, medical: { ...prev.medical, embarazos: { ...prev.medical.embarazos, [k]: v } } }));
   }
   function setSpaAlerta(key: string, v: boolean) {
     setQ((prev) => ({ ...prev, spa: { ...prev.spa, alertas: { ...prev.spa.alertas, [key]: v } } }));
@@ -464,101 +467,56 @@ export default function FormularioPage() {
         ) : moduleConfig.id === 'medical' ? (
           <>
             <section className="card">
-              <h3>Datos adicionales</h3>
+              <h3>Datos personales</h3>
               <div className="grid2">
-                <Field label="Sexo">
-                  <select value={q.medical.sexo} onChange={(e) => setMed('sexo', e.target.value)}>
-                    <option value="">—</option>
-                    {SEXOS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
-                  </select>
-                </Field>
+                <div className="qrow">
+                  <span>Sexo</span>
+                  <div className="yesno">
+                    <button type="button" className={q.medical.sexo === 'M' ? 'active' : ''} onClick={() => setMed('sexo', 'M')}>M</button>
+                    <button type="button" className={q.medical.sexo === 'F' ? 'active' : ''} onClick={() => setMed('sexo', 'F')}>F</button>
+                  </div>
+                </div>
+                <Field label="País"><input type="text" value={q.medical.pais} onChange={(e) => setMed('pais', e.target.value)} /></Field>
                 <Field label="Estado civil"><input type="text" value={q.medical.estadoCivil} onChange={(e) => setMed('estadoCivil', e.target.value)} /></Field>
-                <Field label="Escolaridad"><input type="text" value={q.medical.escolaridad} onChange={(e) => setMed('escolaridad', e.target.value)} /></Field>
                 <Field label="Ocupación"><input type="text" value={q.medical.ocupacion} onChange={(e) => setMed('ocupacion', e.target.value)} /></Field>
-                <Field label="Grupo sanguíneo (si lo sabes)"><input type="text" value={q.medical.tipoSangre} onChange={(e) => setMed('tipoSangre', e.target.value)} placeholder="O+" /></Field>
-                <Field label="¿Quién te refirió?"><input type="text" value={q.referidoPor} onChange={(e) => setQ({ ...q, referidoPor: e.target.value })} /></Field>
-                <Field label="Contacto de emergencia"><input type="text" value={q.medical.emergenciaNombre} onChange={(e) => setMed('emergenciaNombre', e.target.value)} /></Field>
-                <Field label="Teléfono de emergencia"><input type="text" value={q.medical.emergenciaTel} onChange={(e) => setMed('emergenciaTel', e.target.value)} /></Field>
+                <Field label="Recomendado por"><input type="text" value={q.referidoPor} onChange={(e) => setQ({ ...q, referidoPor: e.target.value })} /></Field>
+                <Field label="Acompañante"><input type="text" value={q.medical.acompanante} onChange={(e) => setMed('acompanante', e.target.value)} /></Field>
+              </div>
+            </section>
+
+            <section className="card">
+              <h3>Antecedentes médicos personales</h3>
+              {ANTECEDENTES.map(([k, pregunta, detalle]) => (
+                <div key={k} className="qrow" style={{ flexWrap: 'wrap' }}>
+                  <span>{pregunta}</span>
+                  <div className="yesno">
+                    <button type="button" className={q.medical.antecedentes[k].si === 'si' ? 'active' : ''} onClick={() => setMedAnt(k, { si: 'si' })}>Sí</button>
+                    <button type="button" className={q.medical.antecedentes[k].si === 'no' ? 'active' : ''} onClick={() => setMedAnt(k, { si: 'no' })}>No</button>
+                  </div>
+                  <input type="text" aria-label={pregunta + ' ' + detalle} placeholder={detalle} value={q.medical.antecedentes[k].detalle} onChange={(e) => setMedAnt(k, { detalle: e.target.value })} style={{ flex: '1 1 160px' }} />
+                </div>
+              ))}
+              <div className="qrow" style={{ flexWrap: 'wrap' }}>
+                <span>¿Número de embarazos? (E: embarazos, P: partos, A: abortos, C: cesáreas)</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {(['e', 'p', 'a', 'c'] as const).map((k) => (
+                    <input key={k} type="text" inputMode="numeric" aria-label={k.toUpperCase()} placeholder={k.toUpperCase()} value={q.medical.embarazos[k]} onChange={(e) => setMedEmb(k, e.target.value)} style={{ width: 54 }} />
+                  ))}
+                </div>
               </div>
             </section>
 
             <section className="card">
               <h3>Motivo de consulta</h3>
-              <Field label="¿Qué te trae a la consulta?">
+              <Field label="¿Cuál es el motivo principal de su visita?">
                 <textarea value={q.motivoConsulta} onChange={(e) => setQ({ ...q, motivoConsulta: e.target.value })} rows={2} />
               </Field>
-              <Field label="¿Desde cuándo lo tienes y cómo ha evolucionado? ¿Qué síntomas presentas? ¿Has recibido algún tratamiento?">
-                <textarea value={q.medical.padecimientoActual} onChange={(e) => setMed('padecimientoActual', e.target.value)} rows={3} />
+              <Field label="¿Qué procedimiento desea realizarse?">
+                <textarea value={q.medical.procedimientoDeseado} onChange={(e) => setMed('procedimientoDeseado', e.target.value)} rows={2} />
               </Field>
-            </section>
-
-            <section className="card">
-              <h3>Antecedentes familiares</h3>
-              <p className="hint">¿Algún familiar directo (padres, hermanos, abuelos) ha padecido lo siguiente?</p>
-              <div className="checkrow wrap">
-                {HEREDOFAMILIARES.map(([k, label]) => (
-                  <label key={k} className="checkbox">
-                    <input type="checkbox" checked={!!q.medical.heredofamiliares[k]} onChange={(e) => setMedMap('heredofamiliares', k, e.target.checked)} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              <Field label="Otros y parentesco">
-                <input type="text" value={q.medical.heredofamiliaresOtros} onChange={(e) => setMed('heredofamiliaresOtros', e.target.value)} />
+              <Field label="¿Se ha realizado procedimientos estéticos antes?">
+                <textarea value={q.medical.procedimientosPrevios} onChange={(e) => setMed('procedimientosPrevios', e.target.value)} rows={2} />
               </Field>
-            </section>
-
-            <section className="card">
-              <h3>Estilo de vida</h3>
-              <div className="grid2">
-                {NO_PATOLOGICOS.map(([k, label]) => (
-                  <Field key={k} label={label}>
-                    <input type="text" value={q.medical.noPatologicos[k] || ''} onChange={(e) => setMedMap('noPatologicos', k, e.target.value)} />
-                  </Field>
-                ))}
-              </div>
-            </section>
-
-            <section className="card">
-              <h3>Antecedentes personales de salud</h3>
-              <p className="hint">Marca lo que has padecido o padeces:</p>
-              <div className="checkrow wrap">
-                {PATOLOGICOS.map(([k, label]) => (
-                  <label key={k} className="checkbox">
-                    <input type="checkbox" checked={!!q.medical.patologicos[k]} onChange={(e) => setMedMap('patologicos', k, e.target.checked)} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              <div className="grid2">
-                <Field label="Cirugías previas"><textarea rows={2} value={q.medical.cirugias} onChange={(e) => setMed('cirugias', e.target.value)} /></Field>
-                <Field label="Hospitalizaciones"><textarea rows={2} value={q.medical.hospitalizaciones} onChange={(e) => setMed('hospitalizaciones', e.target.value)} /></Field>
-                <Field label="Transfusiones"><input type="text" value={q.medical.transfusiones} onChange={(e) => setMed('transfusiones', e.target.value)} /></Field>
-                <Field label="Fracturas o accidentes"><input type="text" value={q.medical.traumatismos} onChange={(e) => setMed('traumatismos', e.target.value)} /></Field>
-                <Field label="Alergias a medicamentos"><input type="text" value={q.medical.alergiasMedicamentos} onChange={(e) => setMed('alergiasMedicamentos', e.target.value)} /></Field>
-                <Field label="Otras alergias (alimentos, látex…)"><input type="text" value={q.medical.alergiasOtras} onChange={(e) => setMed('alergiasOtras', e.target.value)} /></Field>
-              </div>
-              <Field label="Medicamentos que tomas actualmente (nombre, dosis y horario)">
-                <textarea rows={2} value={q.medical.medicamentosActuales} onChange={(e) => setMed('medicamentosActuales', e.target.value)} />
-              </Field>
-            </section>
-
-            <section className="card">
-              <h3>Antecedentes ginecológicos y obstétricos (si aplica)</h3>
-              <div className="grid2">
-                {GINECO.map(([k, label]) => (
-                  <Field key={k} label={label}>
-                    <input type="text" value={q.medical.gineco[k] || ''} onChange={(e) => setMedMap('gineco', k, e.target.value)} />
-                  </Field>
-                ))}
-              </div>
-              <div className="qrow">
-                <span>¿Estás embarazada actualmente?</span>
-                <div className="yesno">
-                  <button type="button" className={q.medical.embarazoActual === 'si' ? 'active' : ''} onClick={() => setMed('embarazoActual', 'si')}>Sí</button>
-                  <button type="button" className={q.medical.embarazoActual === 'no' ? 'active' : ''} onClick={() => setMed('embarazoActual', 'no')}>No</button>
-                </div>
-              </div>
             </section>
           </>
         ) : (

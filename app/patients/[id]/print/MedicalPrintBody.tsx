@@ -1,14 +1,14 @@
 import { IntakeForm } from '@/lib/intake';
-import { APARATOS, EXPLORACION, GINECO, HEREDOFAMILIARES, NO_PATOLOGICOS, PATOLOGICOS, SEXOS, SIGNOS, imc } from '@/lib/medical-ficha';
+import { ANTECEDENTES, EXPLORACION_CAMPOS } from '@/lib/medical-ficha';
+import { EsquemaVista } from '../../../components/EsquemaMarcado';
 
 type Patient = { name: string; phone: string; email: string; address1: string; city: string; state: string; dateOfBirth: string; numeroHistoriaClinica: string };
 
-const dash = (v: string) => (v && v.trim() ? v : '—');
-const box = (v: boolean) => (v ? '☑' : '☐');
+const val = (v: string) => (v && v.trim() ? v : '');
 
 function ageOf(dob: string): string {
   const d = new Date(dob);
-  if (!dob || Number.isNaN(d.getTime())) return '—';
+  if (!dob || Number.isNaN(d.getTime())) return '';
   const now = new Date();
   let age = now.getFullYear() - d.getFullYear();
   if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) age--;
@@ -16,141 +16,122 @@ function ageOf(dob: string): string {
 }
 
 function fecha(v: string): string {
-  const d = new Date(v);
-  return !v || Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('es', { dateStyle: 'medium' });
+  const d = new Date(v.length === 10 ? v + 'T12:00:00' : v);
+  return !v || Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-MX');
 }
 
-function Checks({ rows, map }: { rows: readonly (readonly [string, string])[]; map: Record<string, boolean> }) {
+function Line({ label, value, style }: { label: string; value: string; style?: React.CSSProperties }) {
   return (
-    <div className="print-grid">
-      {rows.map(([k, label]) => <div key={k}>{box(!!map[k])} {label}</div>)}
+    <div className="med-line" style={style}>
+      <span className="med-line-label">{label}</span>
+      <span className="med-line-value">{value}</span>
     </div>
   );
 }
 
-function Pairs({ rows, map }: { rows: readonly (readonly [string, string])[]; map: Record<string, string> }) {
-  const filled = rows.filter(([k]) => (map[k] || '').trim());
-  if (!filled.length) return <p>—</p>;
-  return (
-    <div className="print-grid">
-      {filled.map(([k, label]) => <div key={k}><strong>{label}:</strong> {map[k]}</div>)}
-    </div>
-  );
-}
-
-// Historia clínica médica impresa, con el orden del expediente clínico (NOM-004-SSA3-2012).
+// Historia clínica médica impresa: réplica del formato del Dr. José Daza (dos páginas).
 export default function MedicalPrintBody({ patient, intake }: { patient: Patient; intake: IntakeForm }) {
   const m = intake.medical;
-  const sexo = SEXOS.find(([k]) => k === m.sexo)?.[1] || '—';
-  const imcValor = imc(m.signos.peso || '', m.signos.talla || '');
+  const domicilio = [patient.address1, patient.city, patient.state].filter(Boolean).join(', ');
 
   return (
-    <>
-      <section className="print-block">
-        <h2>Ficha de identificación</h2>
-        {intake.fotoUrl && <img src={intake.fotoUrl} alt={patient.name} className="print-patient-photo" />}
-        <div className="print-grid">
-          <div><strong>Nombre:</strong> {patient.name}</div>
-          <div><strong>Núm. historia clínica:</strong> {patient.numeroHistoriaClinica}</div>
-          <div><strong>Sexo:</strong> {sexo}</div>
-          <div><strong>Fecha de nacimiento:</strong> {fecha(patient.dateOfBirth)} <strong>Edad:</strong> {ageOf(patient.dateOfBirth)}</div>
-          <div><strong>Estado civil:</strong> {dash(m.estadoCivil)}</div>
-          <div><strong>Escolaridad:</strong> {dash(m.escolaridad)}</div>
-          <div><strong>Ocupación:</strong> {dash(m.ocupacion)}</div>
-          <div><strong>Grupo sanguíneo:</strong> {dash(m.tipoSangre)}</div>
-          <div><strong>Teléfono:</strong> {dash(patient.phone)}</div>
-          <div><strong>Correo:</strong> {dash(patient.email)}</div>
-          <div><strong>Domicilio:</strong> {[patient.address1, patient.city, patient.state].filter(Boolean).join(', ') || '—'}</div>
-          <div><strong>Contacto de emergencia:</strong> {dash(m.emergenciaNombre)} — {dash(m.emergenciaTel)}</div>
+    <div className="med-doc">
+      <div className="med-title-row">
+        <h1 className="med-title">Historia clínica</h1>
+        <div className="med-fecha"><strong>Fecha:</strong> {fecha(m.fechaHistoria || intake.fechaFicha)}</div>
+      </div>
+
+      <h2 className="med-h">Datos personales</h2>
+      <Line label="Nombre del paciente:" value={patient.name} />
+      <div className="med-row">
+        <Line label="Fecha de nacimiento:" value={fecha(patient.dateOfBirth)} />
+        <Line label="Edad:" value={ageOf(patient.dateOfBirth)} />
+        <div className="med-line">
+          <span className="med-line-label">Sexo:</span>
+          <span className="med-radio">{m.sexo === 'M' ? '◉' : '○'} M</span>
+          <span className="med-radio">{m.sexo === 'F' ? '◉' : '○'} F</span>
         </div>
-      </section>
+        <Line label="País:" value={val(m.pais)} />
+      </div>
+      <div className="med-row">
+        <Line label="Ocupación:" value={val(m.ocupacion)} style={{ flex: 2 }} />
+        <Line label="Estado civil:" value={val(m.estadoCivil)} />
+      </div>
+      <Line label="Domicilio:" value={domicilio} />
+      <div className="med-row">
+        <Line label="Teléfono:" value={val(patient.phone)} />
+        <Line label="E-mail:" value={val(patient.email)} style={{ flex: 1.4 }} />
+      </div>
+      <div className="med-row">
+        <Line label="Recomendado por:" value={val(intake.referidoPor)} />
+        <Line label="Acompañante:" value={val(m.acompanante)} />
+      </div>
 
-      <section className="print-block">
-        <h2>Motivo de consulta y padecimiento actual</h2>
-        <p><strong>Motivo:</strong> {dash(intake.motivoConsulta)}</p>
-        <p><strong>Padecimiento actual:</strong> {dash(m.padecimientoActual)}</p>
-      </section>
-
-      <section className="print-block">
-        <h2>Antecedentes heredofamiliares</h2>
-        <Checks rows={HEREDOFAMILIARES} map={m.heredofamiliares} />
-        <p><strong>Otros / parentesco:</strong> {dash(m.heredofamiliaresOtros)}</p>
-      </section>
-
-      <section className="print-block">
-        <h2>Antecedentes personales no patológicos</h2>
-        <Pairs rows={NO_PATOLOGICOS} map={m.noPatologicos} />
-      </section>
-
-      <section className="print-block">
-        <h2>Antecedentes personales patológicos</h2>
-        <Checks rows={PATOLOGICOS} map={m.patologicos} />
-        <p><strong>Cirugías:</strong> {dash(m.cirugias)}</p>
-        <p><strong>Hospitalizaciones:</strong> {dash(m.hospitalizaciones)}</p>
-        <p><strong>Transfusiones:</strong> {dash(m.transfusiones)} <strong>Traumatismos:</strong> {dash(m.traumatismos)}</p>
-        <p><strong>Alergias a medicamentos:</strong> {dash(m.alergiasMedicamentos)} <strong>Otras alergias:</strong> {dash(m.alergiasOtras)}</p>
-        <p><strong>Medicamentos actuales:</strong> {dash(m.medicamentosActuales)}</p>
-      </section>
-
-      <section className="print-block">
-        <h2>Antecedentes gineco-obstétricos</h2>
-        <Pairs rows={GINECO} map={m.gineco} />
-        <p><strong>Embarazo actual:</strong> {m.embarazoActual === 'si' ? 'Sí' : m.embarazoActual === 'no' ? 'No' : '—'}</p>
-      </section>
-
-      <section className="print-block">
-        <h2>Interrogatorio por aparatos y sistemas</h2>
-        <Pairs rows={APARATOS} map={m.aparatos} />
-      </section>
-
-      <section className="print-block">
-        <h2>Exploración física</h2>
-        <div className="print-grid">
-          {SIGNOS.filter(([k]) => (m.signos[k] || '').trim()).map(([k, label]) => <div key={k}><strong>{label}:</strong> {m.signos[k]}</div>)}
-          {imcValor && <div><strong>IMC:</strong> {imcValor}</div>}
+      <h2 className="med-h">Antecedentes médicos personales</h2>
+      <div className="med-ant">
+        {ANTECEDENTES.map(([k, pregunta, detalle], i) => {
+          const a = m.antecedentes[k];
+          const bandas = Math.floor(i / 2) % 2 === 1;
+          return (
+            <div key={k} className={'med-ant-cell' + (bandas ? ' band' : '')}>
+              <div className="med-ant-q">
+                <div>{pregunta}</div>
+                <div className="med-ant-d">{detalle} {val(a.detalle)}</div>
+              </div>
+              <div className="med-yn">
+                <span className="med-box">{a.si === 'si' ? '✕' : ''}</span> Sí
+                <span className="med-box">{a.si === 'no' ? '✕' : ''}</span> No
+              </div>
+            </div>
+          );
+        })}
+        <div className="med-ant-cell band">
+          <div className="med-ant-q">
+            <div>¿Número de embarazos?</div>
+            <div className="med-ant-d">E: Embarazos P: Partos A: Abortos C: Cesáreas</div>
+          </div>
+          <div className="med-yn">
+            {(['e', 'p', 'a', 'c'] as const).map((k) => (
+              <span key={k}><span className="med-box wide">{m.embarazos[k]}</span> {k.toUpperCase()} </span>
+            ))}
+          </div>
         </div>
-        <Pairs rows={EXPLORACION} map={m.exploracion} />
-      </section>
+      </div>
 
-      <section className="print-block">
-        <h2>Estudios de laboratorio y gabinete</h2>
-        <p>{dash(m.estudios)}</p>
-      </section>
+      <h2 className="med-h">Motivo de consulta</h2>
+      <div className="med-q"><strong>● ¿Cuál es el motivo principal de su visita?</strong><div className="med-a">{val(intake.motivoConsulta)}</div></div>
+      <div className="med-q"><strong>● ¿Qué procedimiento desea realizarse?</strong><div className="med-a">{val(m.procedimientoDeseado)}</div></div>
+      <div className="med-q"><strong>● ¿Se ha realizado procedimientos estéticos antes?</strong><div className="med-a">{val(m.procedimientosPrevios)}</div></div>
 
-      <section className="print-block">
-        <h2>Diagnósticos, plan y pronóstico</h2>
-        <p style={{ whiteSpace: 'pre-wrap' }}><strong>Diagnósticos:</strong> {dash(m.diagnosticos)}</p>
-        <p style={{ whiteSpace: 'pre-wrap' }}><strong>Plan de tratamiento:</strong> {dash(m.plan)}</p>
-        <p style={{ whiteSpace: 'pre-wrap' }}><strong>Indicaciones:</strong> {dash(m.indicaciones)}</p>
-        <p><strong>Pronóstico:</strong> {dash(m.pronostico)}</p>
-      </section>
+      <h2 className="med-h">Exploración física</h2>
+      <div className="med-exp">
+        {EXPLORACION_CAMPOS.map(([k, label]) => (
+          <div key={k} className="med-exp-cell">
+            <span>{label}:</span>
+            <span className="med-pill">{val(m.exploracion[k] || '')}</span>
+          </div>
+        ))}
+      </div>
 
-      <section className="print-block declaracion-block">
-        <h2>Declaración del paciente</h2>
-        <p>
-          Declaro que la información proporcionada en esta historia clínica es verdadera y completa, según mi conocimiento, y me
-          comprometo a informar a mi médico cualquier cambio en mi estado de salud, medicación, alergias o embarazo. Autorizo al
-          médico y al personal de la consulta a realizar la valoración clínica correspondiente. Esta historia clínica no sustituye
-          el consentimiento informado de cada procedimiento.
-        </p>
-      </section>
-
-      <section className="print-block signature-block">
-        <div className="signature-line">
-          {intake.firmaDibujoUrl ? (
-            <div className="line signed"><img src={intake.firmaDibujoUrl} alt="Firma del paciente" className="signature-img" /></div>
-          ) : intake.firmaAutorizacion ? (
-            <div className="line signed">{intake.firmaAutorizacion}</div>
-          ) : (
-            <div className="line" />
-          )}
-          <div className="sub">FIRMA DEL PACIENTE</div>
+      <div className="med-page2">
+        <EsquemaVista trazos={m.esquema} />
+        <div className="med-dp">
+          <div className="med-dp-box"><h3>Diagnóstico</h3><div className="med-dp-text">{val(m.diagnostico)}</div></div>
+          <div className="med-dp-box"><h3>Plan</h3><div className="med-dp-text">{val(m.plan)}</div></div>
         </div>
-        <div className="signature-line">
-          <div className="line" />
-          <div className="sub">NOMBRE Y FIRMA DEL MÉDICO</div>
+        <div className="med-firmas">
+          <div className="med-firma">
+            {intake.firmaDibujoUrl ? <img src={intake.firmaDibujoUrl} alt="Firma del paciente" className="signature-img" /> : <div style={{ height: 40 }}>{val(intake.firmaAutorizacion)}</div>}
+            <div className="med-firma-line" />
+            <div>Firma del paciente</div>
+          </div>
+          <div className="med-firma">
+            <div style={{ height: 40 }} />
+            <div className="med-firma-line" />
+            <div>Firma del médico</div>
+          </div>
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }

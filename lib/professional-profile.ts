@@ -9,10 +9,11 @@ export type ProfessionalProfile = {
   cedula: string;
   institucion: string;
   cedulaEspecialidad: string;
+  credenciales: string; // líneas adicionales del membrete (una por línea)
 };
 
 export function emptyProfessional(): ProfessionalProfile {
-  return { nombre: '', titulo: '', cedula: '', institucion: '', cedulaEspecialidad: '' };
+  return { nombre: '', titulo: '', cedula: '', institucion: '', cedulaEspecialidad: '', credenciales: '' };
 }
 
 async function findCustomValue() {
