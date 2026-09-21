@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   '/sw.js',
   '/clinic-logo.png',
   '/galatea-logo.png',
+  '/medical-logo.jpg',
   '/odontograma.png',
   '/icon-192.png',
   '/icon-512.png',
