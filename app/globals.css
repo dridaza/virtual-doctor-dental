@@ -1900,3 +1900,8 @@ button.tint-amber:hover, .button.tint-amber:hover { background: linear-gradient(
 .week-event.has-color.status-cancelled .week-event-title { text-decoration: line-through; }
 .chat-head { gap: 8px; }
 .chat-ghl { margin-left: auto; font-size: 12px; text-decoration: underline; color: var(--accent, #0071e3); }
+
+/* Arrastrar citas entre días */
+.week-event[draggable="true"] { cursor: grab; }
+.week-event[draggable="true"]:active { cursor: grabbing; }
+.week-day.drop-over { outline: 2px dashed var(--accent, #0071e3); outline-offset: -2px; background: rgba(0, 113, 227, 0.07); }

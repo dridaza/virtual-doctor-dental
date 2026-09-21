@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import EditarCita, { CitaEditable } from './EditarCita';
+import MoverCita from './MoverCita';
 
 type Event = {
   id: string;
@@ -44,6 +45,7 @@ function useWeek(offset: number, reloadKey = 0) {
   // texto - sin reconstruir fechas con el huso horario del navegador.
   const days = dayKeys.map((ymd, i) => ({
     label: DIAS[i],
+    dateKey: ymd,
     dayNumber: Number(ymd.split('-')[2]),
     events: events.filter((e) => e.dateKey === ymd),
   }));
@@ -51,9 +53,22 @@ function useWeek(offset: number, reloadKey = 0) {
   return { days, loading, error };
 }
 
-function DayColumn({ day, onSelect }: { day: { label: string; dayNumber: number; events: Event[] }; onSelect: (ev: Event) => void }) {
+type Day = { label: string; dateKey: string; dayNumber: number; events: Event[] };
+
+function DayColumn({ day, onSelect, onDropEvent }: { day: Day; onSelect: (ev: Event) => void; onDropEvent: (evId: string, day: Day) => void }) {
+  const [over, setOver] = useState(false);
   return (
-    <div className="week-day">
+    <div
+      className={`week-day${over ? ' drop-over' : ''}`}
+      onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setOver(true); }}
+      onDragLeave={() => setOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setOver(false);
+        const id = e.dataTransfer.getData('text/plain');
+        if (id) onDropEvent(id, day);
+      }}
+    >
       <div className="week-day-header">
         {day.label} <span>{day.dayNumber}</span>
       </div>
@@ -64,6 +79,8 @@ function DayColumn({ day, onSelect }: { day: { label: string; dayNumber: number;
           <button
             key={ev.id}
             type="button"
+            draggable
+            onDragStart={(e) => { e.dataTransfer.setData('text/plain', ev.id); e.dataTransfer.effectAllowed = 'move'; }}
             className={`week-event status-${ev.status}${ev.color ? ' has-color' : ''}`}
             style={ev.color ? ({ '--ev-color': ev.color } as React.CSSProperties) : undefined}
             onClick={() => onSelect(ev)}
@@ -87,7 +104,14 @@ export default function WeekCalendar() {
   const [reloadKey, setReloadKey] = useState(0);
   const [selected, setSelected] = useState<Event | null>(null);
   const { days, loading, error } = useWeek(offset, reloadKey);
+  const [moving, setMoving] = useState<{ ev: Event; day: Day } | null>(null);
   const select = (ev: Event) => setSelected(ev);
+  const allEvents = days.flatMap((d) => d.events);
+  // Al soltar una cita en otro día se pide confirmar (y ajustar) la hora; si es el mismo día no hace nada.
+  const dropEvent = (evId: string, day: Day) => {
+    const ev = allEvents.find((e) => e.id === evId);
+    if (ev && ev.dateKey !== day.dateKey) setMoving({ ev, day });
+  };
 
   return (
     <div className="card">
@@ -103,8 +127,20 @@ export default function WeekCalendar() {
       {error && <div className="status-line error">Error: {error}</div>}
       {!loading && !error && (
         <div className="week-grid">
-          {days.map((day) => <DayColumn key={day.label} day={day} onSelect={select} />)}
+          {days.map((day) => <DayColumn key={day.label} day={day} onSelect={select} onDropEvent={dropEvent} />)}
         </div>
+      )}
+
+      {moving && createPortal(
+        <MoverCita
+          ev={moving.ev}
+          dateKey={moving.day.dateKey}
+          dayLabel={`${moving.day.label} ${moving.day.dayNumber}`}
+          allEvents={allEvents}
+          onClose={() => setMoving(null)}
+          onMoved={() => { setMoving(null); setReloadKey((k) => k + 1); }}
+        />,
+        document.body
       )}
 
       {selected && createPortal(
@@ -133,7 +169,7 @@ export default function WeekCalendar() {
             {error && <div className="status-line error">Error: {error}</div>}
             {!loading && !error && (
               <div className="week-grid-modal">
-                {days.map((day) => <DayColumn key={day.label} day={day} onSelect={select} />)}
+                {days.map((day) => <DayColumn key={day.label} day={day} onSelect={select} onDropEvent={dropEvent} />)}
               </div>
             )}
           </div>
