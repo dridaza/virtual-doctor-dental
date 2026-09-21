@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: contactId } = await params;
   try {
-    const { calendarId, startTime, title, notes, custom } = await request.json();
+    const { calendarId, startTime, notes, custom } = await request.json();
     if (!calendarId || !startTime) {
       return NextResponse.json({ error: 'Elige calendario y horario' }, { status: 400 });
     }
@@ -16,14 +16,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Horario inválido' }, { status: 400 });
     }
 
-    const [cal, contact] = await Promise.all([
-      ghlFetch<{ calendar: any }>(`/calendars/${calendarId}`),
-      ghlFetch<{ contact: any }>(`/contacts/${contactId}`),
-    ]);
-    const c = cal.calendar;
+    const c = (await ghlFetch<{ calendar: any }>(`/calendars/${calendarId}`)).calendar;
     const minutes = Number(c.slotDuration || 60) * (c.slotDurationUnit === 'hours' ? 60 : 1);
     const end = new Date(start.getTime() + minutes * 60000);
-    const patientName = contact.contact.name || [contact.contact.firstName, contact.contact.lastName].filter(Boolean).join(' ');
 
     const res = await ghlFetch<any>('/calendars/events/appointments', {
       method: 'POST',
@@ -33,7 +28,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         contactId,
         startTime: start.toISOString(),
         endTime: end.toISOString(),
-        title: String(title || '').trim() || `${c.name} - ${patientName}`,
+        // Sin título: el nombre de la cita lo define GHL (configuración del calendario y workflows).
         appointmentStatus: 'confirmed',
         toNotify: true,
         ...(custom ? { ignoreFreeSlotValidation: true } : {}),
