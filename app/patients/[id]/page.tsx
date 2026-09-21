@@ -661,18 +661,21 @@ export default function PatientPage() {
           </div>
           <form className="card visit-form" onSubmit={submitVisit}>
             <h3>Agregar visita</h3>
-            <p className="hint">Qué se hizo, en qué pieza y con qué material. El cargo que anotes aquí aparece automáticamente en Facturación.</p>
+            <p className="hint">{moduleConfig.visitaHint} El cargo que anotes aquí aparece automáticamente en Facturación.</p>
             <div className="grid5">
               <label className="field"><span>Fecha</span>
                 <input type="datetime-local" value={newVisit.fecha} onChange={(e) => setNewVisit({ ...newVisit, fecha: e.target.value })} />
               </label>
               <label className="field" style={{ gridColumn: 'span 2' }}><span>Tratamiento</span>
-                <input type="text" required value={newVisit.tratamiento} onChange={(e) => setNewVisit({ ...newVisit, tratamiento: e.target.value })} placeholder="Ej. Obturación" />
+                <input type="text" required value={newVisit.tratamiento} onChange={(e) => setNewVisit({ ...newVisit, tratamiento: e.target.value })} placeholder={moduleConfig.tratamientoEjemplo} />
               </label>
-              <label className="field"><span>Pieza</span>
-                <input type="text" value={newVisit.pieza} onChange={(e) => setNewVisit({ ...newVisit, pieza: e.target.value })} placeholder="14" />
+              <label className="field"><span>{moduleConfig.piezaLabel}</span>
+                <input type="text" value={newVisit.pieza} onChange={(e) => setNewVisit({ ...newVisit, pieza: e.target.value })} placeholder={moduleConfig.piezaEjemplo} />
               </label>
-              <label className="field"><span>Material</span>
+              <label className="field"><span>{moduleConfig.materialLabel}</span>
+                {!moduleConfig.materialLista ? (
+                  <input type="text" value={newVisit.material} onChange={(e) => setNewVisit({ ...newVisit, material: e.target.value })} />
+                ) : (
                 <select value={newVisit.material} onChange={(e) => setNewVisit({ ...newVisit, material: e.target.value })}>
                   <option value="">—</option>
                   <option value="Temporal">Temporal</option>
@@ -680,6 +683,7 @@ export default function PatientPage() {
                   <option value="Ninguno">Ninguno</option>
                   <option value="Control">Control</option>
                 </select>
+                )}
               </label>
               <label className="field"><span>Cargo</span>
                 <input type="number" min={0} step="0.01" value={newVisit.cargo} onChange={(e) => setNewVisit({ ...newVisit, cargo: e.target.value })} placeholder="0" />
@@ -699,8 +703,8 @@ export default function PatientPage() {
                   <th>Tipo</th>
                   <th>Fecha</th>
                   <th>Tratamiento</th>
-                  <th>Pieza</th>
-                  <th>Material</th>
+                  <th>{moduleConfig.piezaLabel}</th>
+                  <th>{moduleConfig.materialLabel}</th>
                   <th>Cargo</th>
                 </tr>
               </thead>

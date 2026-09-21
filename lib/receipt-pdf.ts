@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import { moduleConfig } from './modules';
 import fs from 'fs';
 import path from 'path';
 import { montoEnLetras } from './numero-a-letras';
@@ -90,7 +91,7 @@ export function buildReceiptPdf(data: ReceiptData): Promise<Buffer> {
 
     doc.rect(50, y, 495, 28).stroke('#e6e6ea');
     doc.fillColor(text).font('Helvetica').fontSize(10);
-    doc.text(data.concepto || 'Consulta / tratamiento dental', 60, y + 9, { width: 260 });
+    doc.text(data.concepto || moduleConfig.conceptoRecibo, 60, y + 9, { width: 260 });
     doc.text(data.cargo ? money(data.cargo) : '—', 340, y + 9, { width: 90, align: 'right' });
     doc.text(money(data.pago), 445, y + 9, { width: 90, align: 'right' });
     y += 40;

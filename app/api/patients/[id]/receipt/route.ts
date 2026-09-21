@@ -1,4 +1,5 @@
 import { logEvent } from '@/lib/audit-log';
+import { moduleConfig } from '@/lib/modules';
 import { NextResponse } from 'next/server';
 import { ghlFetch, getLocationId } from '@/lib/ghl';
 import { getNumeroHistoriaClinica } from '@/lib/historia-clinica';
@@ -55,7 +56,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         phone: contact.phone || '',
         email: contact.email || '',
       },
-      concepto: concepto || 'Consulta / tratamiento dental',
+      concepto: concepto || moduleConfig.conceptoRecibo,
       cargo,
       pago,
       saldo,

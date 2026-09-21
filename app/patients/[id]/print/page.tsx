@@ -267,8 +267,8 @@ export default function PrintPage() {
                 <th>Tipo</th>
                 <th>Fecha</th>
                 <th>Tratamiento</th>
-                <th>Pieza</th>
-                <th>Material</th>
+                <th>{moduleConfig.piezaLabel}</th>
+                <th>{moduleConfig.materialLabel}</th>
                 <th>Cargo</th>
               </tr>
             </thead>
