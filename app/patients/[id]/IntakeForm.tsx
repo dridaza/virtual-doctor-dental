@@ -1,6 +1,7 @@
 'use client';
 
 import { IntakeForm, TEJIDOS_BLANDOS_OPCIONES, CABEZA_CUELLO_OPCIONES } from '@/lib/intake';
+import { moduleConfig } from '@/lib/modules';
 import { buildOdontogramaSummary } from '@/lib/odontograma-positions';
 import Odontogram from './Odontogram';
 
@@ -147,9 +148,13 @@ export default function IntakeFormView({ value, onChange, readOnly }: Props) {
             <Field label="¿Fuma?"><input type="text" value={value.habitos.fuma} onChange={(e) => setHabito('fuma', e.target.value)} /></Field>
             <Field label="¿Aprieta o rechina los dientes?"><input type="text" value={value.habitos.aprietaORechinaDientes} onChange={(e) => setHabito('aprietaORechinaDientes', e.target.value)} /></Field>
             <Field label="¿Muerde objetos con los dientes?"><input type="text" value={value.habitos.muerdeObjetos} onChange={(e) => setHabito('muerdeObjetos', e.target.value)} /></Field>
+            {moduleConfig.habitosDentales && (
+              <>
             <Field label="¿Cuántas veces al día se cepilla?"><input type="text" value={value.habitos.cepilladoVecesDia} onChange={(e) => setHabito('cepilladoVecesDia', e.target.value)} /></Field>
             <Field label="¿Usa hilo dental?"><input type="text" value={value.habitos.usaHiloDental} onChange={(e) => setHabito('usaHiloDental', e.target.value)} /></Field>
             <Field label="Última visita al dentista y por qué"><input type="text" value={value.habitos.ultimaVisitaDentista} onChange={(e) => setHabito('ultimaVisitaDentista', e.target.value)} /></Field>
+              </>
+            )}
           </div>
         </section>
 
@@ -204,6 +209,7 @@ export default function IntakeFormView({ value, onChange, readOnly }: Props) {
           </Field>
         </section>
 
+        {moduleConfig.odontograma && (
         <section className="card">
           <h3>Odontograma y periodontograma</h3>
           <p className="hint">Haz clic en la corona de una pieza para registrar hallazgos (ej. Do, PM, C), o en la raíz para registrar la profundidad de sondaje (0-10 mm).</p>
@@ -218,6 +224,7 @@ export default function IntakeFormView({ value, onChange, readOnly }: Props) {
             <p className="odontograma-summary">{buildOdontogramaSummary(value.odontograma, value.periodontograma)}</p>
           )}
         </section>
+        )}
 
         <section className="card">
           <h3>Declaración del paciente</h3>

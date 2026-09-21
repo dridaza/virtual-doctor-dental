@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { moduleConfig } from '@/lib/modules';
 import { useParams, useSearchParams } from 'next/navigation';
 import { PatientQuestionnaire, IntakeForm, defaultQuestionnaire } from '@/lib/intake';
 
@@ -461,9 +462,13 @@ export default function FormularioPage() {
             <Field label="¿Fumas?"><input type="text" value={q.habitos.fuma} onChange={(e) => setHabito('fuma', e.target.value)} /></Field>
             <Field label="¿Aprietas o rechinas los dientes?"><input type="text" value={q.habitos.aprietaORechinaDientes} onChange={(e) => setHabito('aprietaORechinaDientes', e.target.value)} /></Field>
             <Field label="¿Muerdes objetos con los dientes?"><input type="text" value={q.habitos.muerdeObjetos} onChange={(e) => setHabito('muerdeObjetos', e.target.value)} /></Field>
+            {moduleConfig.habitosDentales && (
+              <>
             <Field label="¿Cuántas veces al día te cepillas?"><input type="text" value={q.habitos.cepilladoVecesDia} onChange={(e) => setHabito('cepilladoVecesDia', e.target.value)} /></Field>
             <Field label="¿Usas hilo dental?"><input type="text" value={q.habitos.usaHiloDental} onChange={(e) => setHabito('usaHiloDental', e.target.value)} /></Field>
             <Field label="Última visita al dentista y por qué"><input type="text" value={q.habitos.ultimaVisitaDentista} onChange={(e) => setHabito('ultimaVisitaDentista', e.target.value)} /></Field>
+              </>
+            )}
           </div>
         </section>
 

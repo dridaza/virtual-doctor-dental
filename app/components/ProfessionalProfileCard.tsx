@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { moduleConfig } from '@/lib/modules';
 
 type Profile = { nombre: string; titulo: string; cedula: string; institucion: string; cedulaEspecialidad: string };
 
@@ -47,7 +48,7 @@ export default function ProfessionalProfileCard() {
       ) : (
         <form onSubmit={save} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
           <label className="field"><span>Nombre completo</span><input id="prof-nombre" value={p.nombre} onChange={set('nombre')} placeholder="Dr. Nombre Apellidos" /></label>
-          <label className="field"><span>Título / especialidad</span><input id="prof-titulo" value={p.titulo} onChange={set('titulo')} placeholder="Cirujano Dentista" /></label>
+          <label className="field"><span>Título / especialidad</span><input id="prof-titulo" value={p.titulo} onChange={set('titulo')} placeholder={moduleConfig.tituloEjemplo} /></label>
           <label className="field"><span>Cédula profesional</span><input id="prof-cedula" value={p.cedula} onChange={set('cedula')} /></label>
           <label className="field"><span>Institución que expidió el título</span><input id="prof-inst" value={p.institucion} onChange={set('institucion')} placeholder="Universidad…" /></label>
           <label className="field"><span>Cédula de especialidad (opcional)</span><input id="prof-cedesp" value={p.cedulaEspecialidad} onChange={set('cedulaEspecialidad')} /></label>

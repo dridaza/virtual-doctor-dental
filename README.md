@@ -22,3 +22,18 @@ Crea un archivo `.env.local` con las variables de entorno (nunca se sube a git):
 ## Despliegue
 
 Cada cambio en la rama `main` se publica automáticamente en Vercel. Las variables de entorno se configuran en el panel de Vercel.
+
+## Módulos y clientes nuevos
+
+Un solo código sirve para los tres módulos (dental, spa y medicina). **Cada negocio tiene su propia instalación** en Vercel y su propia cuenta de GHL; nada se comparte entre clientes. La variable `NEXT_PUBLIC_MODULE` (`dental`, `spa` o `medical`; por defecto `dental`) decide qué partes del sistema aparecen.
+
+Para instalar un cliente nuevo:
+
+1. Crea en GHL una integración privada con permisos sobre contactos, notas, calendarios, facturas, productos, conversaciones, usuarios, medios y valores personalizados, y copia su llave.
+2. Ejecuta el script de preparación de la cuenta nueva:
+   ```bash
+   GHL_API_KEY=... GHL_LOCATION_ID=... node scripts/setup-ghl-account.mjs
+   ```
+   Crea el campo donde se guarda la historia clínica, revisa usuarios, calendarios y productos, y muestra las variables de entorno que hay que poner en Vercel. Se puede repetir sin duplicar nada.
+3. Crea un proyecto nuevo en Vercel desde este mismo repositorio y configura las variables de entorno (incluye una `SESSION_SECRET` nueva y `NEXT_PUBLIC_MODULE`).
+4. Pide a un administrador del cliente que entre a Setup y llene los datos profesionales.

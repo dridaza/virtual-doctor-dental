@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { moduleConfig } from '@/lib/modules';
 import { useParams } from 'next/navigation';
 import PrintLetterhead from '@/app/components/PrintLetterhead';
 import { IntakeForm, defaultIntake, TEJIDOS_BLANDOS_OPCIONES, CABEZA_CUELLO_OPCIONES } from '@/lib/intake';
@@ -154,9 +155,13 @@ export default function PrintPage() {
           <div><strong>Fuma:</strong> {intake.habitos.fuma || '—'}</div>
           <div><strong>Aprieta/rechina dientes:</strong> {intake.habitos.aprietaORechinaDientes || '—'}</div>
           <div><strong>Muerde objetos:</strong> {intake.habitos.muerdeObjetos || '—'}</div>
+          {moduleConfig.habitosDentales && (
+            <>
           <div><strong>Cepillado (veces/día):</strong> {intake.habitos.cepilladoVecesDia || '—'}</div>
           <div><strong>Usa hilo dental:</strong> {intake.habitos.usaHiloDental || '—'}</div>
           <div><strong>Última visita al dentista:</strong> {intake.habitos.ultimaVisitaDentista || '—'}</div>
+            </>
+          )}
         </div>
       </section>
 
@@ -181,6 +186,7 @@ export default function PrintPage() {
         <p><strong>Pronóstico:</strong> {intake.pronostico || '—'}</p>
       </section>
 
+      {moduleConfig.odontograma && (
       <section className="print-block odontograma-block">
         <h2>Odontograma y periodontograma</h2>
         <div className="odontograma-canvas" style={{ aspectRatio: `${ODONTOGRAMA_IMG.width} / ${ODONTOGRAMA_IMG.height}` }}>
@@ -208,6 +214,7 @@ export default function PrintPage() {
           <p className="odontograma-list">{buildOdontogramaSummary(intake.odontograma, intake.periodontograma)}</p>
         )}
       </section>
+      )}
 
       <section className="print-block declaracion-block">
         <h2>Declaración del paciente</h2>
