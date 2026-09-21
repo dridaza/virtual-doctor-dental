@@ -12,6 +12,7 @@ export default function ChatWidget() {
   const [texto, setTexto] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [ghlUrl, setGhlUrl] = useState('');
   const [seen, setSeen] = useState<string>('');
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -20,7 +21,7 @@ export default function ChatWidget() {
     fetch('/api/chat')
       .then((r) => r.json())
       .then((d) => {
-        if (d.messages) { setMsgs(d.messages); setMe(d.me || ''); }
+        if (d.messages) { setMsgs(d.messages); setMe(d.me || ''); setGhlUrl(d.ghlUrl || ''); }
       })
       .catch(() => {});
   }, []);
@@ -65,7 +66,7 @@ export default function ChatWidget() {
     <div className="chat-widget">
       {open && (
         <div className="chat-panel" role="dialog" aria-label="Chat interno">
-          <div className="chat-head"><strong>Chat del equipo</strong><button type="button" onClick={() => setOpen(false)} aria-label="Cerrar">×</button></div>
+          <div className="chat-head"><strong>Chat del equipo</strong>{ghlUrl && <a className="chat-ghl" href={ghlUrl} target="_blank" rel="noopener noreferrer">Abrir chat de GHL ↗</a>}<button type="button" onClick={() => setOpen(false)} aria-label="Cerrar">×</button></div>
           <div className="chat-body">
             {msgs.length === 0 && <p className="hint">Aún no hay mensajes. Escribe el primero.</p>}
             {msgs.map((m) => (

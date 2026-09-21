@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
 import { getUserProfile } from '@/lib/user-profiles';
 import { postChat, readChat } from '@/lib/team-chat';
+import { getLocationId } from '@/lib/ghl';
 import { rateLimited } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ export async function GET() {
   try {
     const s = await getSession();
     if (!s) return NextResponse.json({ error: 'Sesión expirada' }, { status: 401 });
-    return NextResponse.json({ me: s.email, messages: await readChat() });
+    return NextResponse.json({ me: s.email, messages: await readChat(), ghlUrl: `https://app.gohighlevel.com/v2/location/${getLocationId()}/conversations/conversations?category=internal-chat&tab=all` });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'No se pudo cargar el chat' }, { status: 502 });
   }
