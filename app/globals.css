@@ -1890,6 +1890,6 @@ button.tint-amber:hover, .button.tint-amber:hover { background: linear-gradient(
 /* Ficha del paciente más ancha */
 .page.page-wide { max-width: 1760px; }
 
-/* Menú principal: la columna central (tabla de pacientes) al doble de ancho */
-.page.page-home { max-width: 2040px; }
+/* Menú principal: la columna central (tabla de pacientes) más ancho (1680px) */
+.page.page-home { max-width: 1680px; }
 .page-home .main-layout { grid-template-columns: 300px minmax(0, 1fr) 270px; }
