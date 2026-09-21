@@ -1,5 +1,6 @@
 'use client';
 
+import { CLINIC_LOGO } from '@/lib/clinic-logo';
 import { useEffect, useRef, useState } from 'react';
 import { ANTECEDENTES, MedicalPaciente, mergeMedical, pickPacienteMedical } from '@/lib/medical-ficha';
 import { ALERTAS_SPA, mergeSpa, pickPaciente, SpaPaciente } from '@/lib/spa-ficha';
@@ -345,7 +346,7 @@ export default function FormularioPage() {
   return (
     <div className="public-form-page">
       <header className="public-form-header">
-        <img src="/clinic-logo.png" alt="Logo" />
+        {CLINIC_LOGO && <img src={CLINIC_LOGO} alt="Logo" />}
         <div className="public-form-header-text">
           <div className="brand-name">{process.env.NEXT_PUBLIC_CLINIC_NAME}</div>
           <div className="sub">{moduleConfig.id === 'spa' ? 'Ficha personal de primera vez' : 'Historia clínica del paciente'}</div>

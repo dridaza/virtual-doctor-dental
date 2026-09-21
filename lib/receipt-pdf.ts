@@ -1,3 +1,4 @@
+import { CLINIC_LOGO } from './clinic-logo';
 import PDFDocument from 'pdfkit';
 import { moduleConfig } from './modules';
 import fs from 'fs';
@@ -42,10 +43,10 @@ export function buildReceiptPdf(data: ReceiptData): Promise<Buffer> {
     const text = '#1d1d1f';
 
     // Encabezado
-    const logoPath = path.join(process.cwd(), 'public', 'clinic-logo.png');
+    const logoPath = CLINIC_LOGO ? path.join(process.cwd(), 'public', CLINIC_LOGO) : '';
     let logoHeight = 0;
     try {
-      if (fs.existsSync(logoPath)) {
+      if (logoPath && fs.existsSync(logoPath)) {
         doc.image(logoPath, 50, 45, { height: 45 });
         logoHeight = 45;
       }

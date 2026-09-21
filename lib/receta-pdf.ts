@@ -1,3 +1,4 @@
+import { CLINIC_LOGO } from './clinic-logo';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
@@ -33,9 +34,9 @@ export function buildRecetaPdf(data: RecetaPdfData): Promise<Buffer> {
     const W = 612 - 108;
 
     // Membrete
-    const logoPath = path.join(process.cwd(), 'public', 'clinic-logo.png');
+    const logoPath = CLINIC_LOGO ? path.join(process.cwd(), 'public', CLINIC_LOGO) : '';
     try {
-      if (fs.existsSync(logoPath)) doc.image(logoPath, 612 - 54 - 90, 46, { fit: [90, 44], align: 'right' });
+      if (logoPath && fs.existsSync(logoPath)) doc.image(logoPath, 612 - 54 - 90, 46, { fit: [90, 44], align: 'right' });
     } catch {
       /* sin logo */
     }

@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   '/manifest.json',
   '/sw.js',
   '/clinic-logo.png',
+  '/galatea-logo.png',
   '/odontograma.png',
   '/icon-192.png',
   '/icon-512.png',

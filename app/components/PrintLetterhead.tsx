@@ -1,3 +1,5 @@
+import { CLINIC_LOGO } from '@/lib/clinic-logo';
+
 export default function PrintLetterhead({ title, patientLine, extraLines }: { title: string; patientLine?: string; extraLines?: string[] }) {
   const nombre = process.env.NEXT_PUBLIC_CLINIC_NAME;
   const direccion = process.env.NEXT_PUBLIC_CLINIC_ADDRESS;
@@ -17,7 +19,7 @@ export default function PrintLetterhead({ title, patientLine, extraLines }: { ti
             {patientLine && <span className="print-lh-patient"> · {patientLine}</span>}
           </div>
         </div>
-        <img src="/clinic-logo.png" alt="Logo" className="print-logo" />
+        {CLINIC_LOGO && <img src={CLINIC_LOGO} alt="Logo" className="print-logo" />}
       </div>
     </header>
   );

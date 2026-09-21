@@ -1,5 +1,6 @@
 'use client';
 
+import { CLINIC_LOGO } from '@/lib/clinic-logo';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -178,7 +179,7 @@ export default function Dashboard() {
         <UserBadge />
       </div>
       <div className="brand-header">
-        <img src="/clinic-logo.png" alt="Logo" className="brand-logo" />
+        {CLINIC_LOGO && <img src={CLINIC_LOGO} alt="Logo" className="brand-logo" />}
         <div className="brand-info">
           <div className="brand-name">{process.env.NEXT_PUBLIC_CLINIC_NAME}</div>
           <div className="brand-meta">

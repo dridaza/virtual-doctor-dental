@@ -1,5 +1,6 @@
 'use client';
 
+import { CLINIC_LOGO } from '@/lib/clinic-logo';
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -86,7 +87,7 @@ export default function LoginPage() {
   return (
     <div className="public-form-page">
       <header className="public-form-header">
-        <img src="/clinic-logo.png" alt="Logo" />
+        {CLINIC_LOGO && <img src={CLINIC_LOGO} alt="Logo" />}
         <div className="public-form-header-text">
           <div className="brand-name">Virtual Doctor</div>
           <div className="sub">Inicia sesión con tu usuario de GoHighLevel</div>
