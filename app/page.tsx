@@ -171,7 +171,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="page">
+    <div className="page page-home">
       <ChatWidget />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
         <Link href="/perfil" className="app-title-link">Virtual Doctor</Link>
