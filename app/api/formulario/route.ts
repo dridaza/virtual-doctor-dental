@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { tr } from '@/lib/terms';
 import { rateLimited, clientIp } from '@/lib/rate-limit';
 import { verifyFormToken } from '@/lib/session';
 import { ghlFetch, getLocationId, getIntakeFieldId } from '@/lib/ghl';
@@ -57,7 +58,7 @@ async function flagExistingContact(contactId: string, firstName: string, lastNam
   await ghlFetch(`/contacts/${contactId}/notes`, {
     method: 'POST',
     body: JSON.stringify({
-      body: `AVISO: se recibió un formulario en línea sin enlace personal (nombre: ${firstName} ${lastName}, teléfono: ${phone || '-'}, email: ${email || '-'}). No se aplicó a la ficha; confírmalo con el paciente y envíale su enlace personal si corresponde.`,
+      body: tr(`AVISO: se recibió un formulario en línea sin enlace personal (nombre: ${firstName} ${lastName}, teléfono: ${phone || '-'}, email: ${email || '-'}). No se aplicó a la ficha; confírmalo con el paciente y envíale su enlace personal si corresponde.`),
     }),
   });
 }
@@ -199,7 +200,7 @@ export async function POST(request: Request) {
     await ghlFetch(`/contacts/${contactId}/notes`, {
       method: 'POST',
       body: JSON.stringify({
-        body: `El paciente ${created ? 'se registró y ' : ''}completó su historia clínica desde el formulario en línea el ${new Date().toLocaleString('es-MX')}.`,
+        body: tr(`El paciente ${created ? 'se registró y ' : ''}completó su historia clínica desde el formulario en línea el ${new Date().toLocaleString('es-MX')}.`),
       }),
     });
 

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import TermsReplacer from './components/TermsReplacer';
 import './globals.css';
 import ActivityTracker from './components/ActivityTracker';
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <ActivityTracker />
+        <TermsReplacer />
         <script
           dangerouslySetInnerHTML={{
             __html: `if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); }); }`,

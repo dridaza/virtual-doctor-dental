@@ -190,7 +190,7 @@ export default function PatientPage() {
     fetch(`/api/patients/${id}/history`).then((r) => r.json()).then((d) => { if (d.timeline) setTimeline(d.timeline); });
     fetch('/api/professional').then((r) => r.json()).then((d) => { if (d.profile) setProfessional(d.profile); });
     loadLedger();
-    loadRecetas();
+    if (moduleConfig.recetas) loadRecetas();
   }, [id]);
 
   const loadLedger = useCallback(() => {
@@ -643,7 +643,7 @@ export default function PatientPage() {
         <button className={tab === 'facturacion' ? 'active' : ''} onClick={() => setTab('facturacion')}>
           Facturación
         </button>
-        <button className={tab === 'recetas' ? 'active' : ''} onClick={() => setTab('recetas')}>Recetas</button>
+        {moduleConfig.recetas && <button className={tab === 'recetas' ? 'active' : ''} onClick={() => setTab('recetas')}>Recetas</button>}
         <button className={tab === 'consentimientos' ? 'active' : ''} onClick={() => setTab('consentimientos')}>Consentimientos</button>
         <button className={tab === 'citas' ? 'active' : ''} onClick={() => setTab('citas')}>Citas</button>
       </div>
@@ -918,7 +918,7 @@ export default function PatientPage() {
         );
       })()}
 
-      {tab === 'recetas' && (
+      {moduleConfig.recetas && tab === 'recetas' && (
         <div>
           <form className="card visit-form" onSubmit={submitReceta}>
             <h3>Nueva receta</h3>

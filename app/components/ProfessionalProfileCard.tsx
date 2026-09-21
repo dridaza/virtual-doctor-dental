@@ -26,7 +26,7 @@ export default function ProfessionalProfileCard() {
       const res = await fetch('/api/professional', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'No se pudo guardar');
-      setMsg({ ok: true, text: 'Datos profesionales guardados. Se usarán en las recetas nuevas y en los recibos.' });
+      setMsg({ ok: true, text: moduleConfig.recetas ? 'Datos profesionales guardados. Se usarán en las recetas nuevas y en los recibos.' : 'Datos profesionales guardados. Se usarán en los recibos.' });
     } catch (err: any) {
       setMsg({ ok: false, text: err.message || 'Error desconocido' });
     } finally {
@@ -38,7 +38,7 @@ export default function ProfessionalProfileCard() {
 
   return (
     <div className="card" style={{ marginTop: 24 }}>
-      <h3>Datos profesionales (recetas y recibos)</h3>
+      <h3>{moduleConfig.recetas ? 'Datos profesionales (recetas y recibos)' : 'Datos profesionales (recibos)'}</h3>
       <p className="hint">
         Estos datos salen en cada receta: nombre completo, cédula profesional, institución que expidió el título, y el
         domicilio del consultorio que ya está en la configuración de la clínica.
