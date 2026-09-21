@@ -1905,3 +1905,8 @@ button.tint-amber:hover, .button.tint-amber:hover { background: linear-gradient(
 .week-event[draggable="true"] { cursor: grab; }
 .week-event[draggable="true"]:active { cursor: grabbing; }
 .week-day.drop-over { outline: 2px dashed var(--accent, #0071e3); outline-offset: -2px; background: rgba(0, 113, 227, 0.07); }
+
+/* Mensajes recientes: más texto por mensaje y una lista más alta */
+.messages-list { max-height: max(560px, calc(100vh - 340px)); }
+.message-body { -webkit-line-clamp: 6; font-size: 0.85rem; line-height: 1.4; }
+.modal-window .message-body { -webkit-line-clamp: unset; }
