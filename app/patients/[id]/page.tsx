@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { moduleConfig } from '@/lib/modules';
+import SpaFichaView from './SpaFichaView';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import IntakeFormView from './IntakeForm';
@@ -645,7 +647,7 @@ export default function PatientPage() {
       {tab === 'historia' && (
         <div>
           <div className="tab-toolbar"><SaveIndicator state={intakeSave} /></div>
-          <IntakeFormView value={intake} onChange={updateIntake} />
+          {moduleConfig.id === 'spa' ? <SpaFichaView value={intake} onChange={updateIntake} /> : <IntakeFormView value={intake} onChange={updateIntake} />}
         </div>
       )}
 

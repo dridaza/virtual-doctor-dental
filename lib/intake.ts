@@ -1,3 +1,5 @@
+import { SpaFicha, SpaPaciente, defaultSpa, defaultSpaPaciente, mergeSpa, applySpaPaciente, fillSpaGaps } from './spa-ficha';
+
 export type IntakeForm = {
   fotoUrl: string;
   motivoConsulta: string;
@@ -60,6 +62,8 @@ export type IntakeForm = {
   imagenes: { url: string; name: string; uploadedAt: string }[];
   consentimientos: { url: string; name: string; uploadedAt: string }[];
   archivosMigrados: boolean;
+  // Ficha de primera vez del módulo Spa (vacía en los demás módulos).
+  spa: SpaFicha;
 };
 
 // Subconjunto de la ficha que el propio paciente puede llenar desde el
@@ -77,6 +81,7 @@ export type PatientQuestionnaire = {
   habitos: IntakeForm['habitos'];
   declaracionAceptada: boolean;
   firmaAutorizacion: string;
+  spa: SpaPaciente;
 };
 
 export function defaultQuestionnaire(): PatientQuestionnaire {
@@ -92,6 +97,7 @@ export function defaultQuestionnaire(): PatientQuestionnaire {
     habitos: base.habitos,
     declaracionAceptada: base.declaracionAceptada,
     firmaAutorizacion: base.firmaAutorizacion,
+    spa: defaultSpaPaciente(),
   };
 }
 
@@ -112,6 +118,7 @@ export function applyPatientQuestionnaire(current: IntakeForm, q: PatientQuestio
     declaracionAceptada: q.declaracionAceptada,
     firmaAutorizacion: q.firmaAutorizacion,
     fechaFicha: current.fechaFicha || new Date().toISOString().slice(0, 10),
+    spa: applySpaPaciente(current.spa, q.spa),
   };
 }
 
@@ -181,6 +188,7 @@ export function defaultIntake(): IntakeForm {
     imagenes: [],
     consentimientos: [],
     archivosMigrados: false,
+    spa: defaultSpa(),
   };
 }
 
@@ -259,6 +267,7 @@ export function fillIntakeGaps(primary: IntakeForm, secondary: IntakeForm): Inta
       ...secondary.consentimientos.filter((si) => !primary.consentimientos.some((pi) => pi.url === si.url)),
     ],
     archivosMigrados: primary.archivosMigrados || secondary.archivosMigrados,
+    spa: fillSpaGaps(primary.spa, secondary.spa),
   };
 }
 
@@ -279,5 +288,6 @@ export function mergeIntake(partial: Partial<IntakeForm> | null | undefined): In
     },
     odontograma: { ...base.odontograma, ...(partial.odontograma || {}) },
     periodontograma: { ...base.periodontograma, ...(partial.periodontograma || {}) },
+    spa: mergeSpa(partial.spa),
   };
 }

@@ -1822,3 +1822,9 @@ button.tint-amber:hover, .button.tint-amber:hover { background: linear-gradient(
 .patient-photo-empty { font-size: 3rem; }
 .patient-photo-label { font-size: 0.8rem; }
 @media (max-width: 600px) { .patient-photo { width: 110px; height: 110px; } }
+
+/* Formulario del spa impreso: la tarjeta de alertas ocupa todo el ancho, con las casillas en 3 columnas */
+@media print {
+  .public-form-page .spa-alertas { grid-column: 1 / -1; }
+  .public-form-page .spa-alertas .checkrow { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px 10px; }
+}

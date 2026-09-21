@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import SpaPrintBody from './SpaPrintBody';
 import { moduleConfig } from '@/lib/modules';
 import { useParams } from 'next/navigation';
 import PrintLetterhead from '@/app/components/PrintLetterhead';
@@ -109,6 +110,11 @@ export default function PrintPage() {
 
       <div className="print-sheet">
       <PrintHeader patient={patient} sheetTitle="Historia clínica" />
+
+      {moduleConfig.id === 'spa' ? (
+        <SpaPrintBody patient={patient} intake={intake} />
+      ) : (
+      <>
 
       <section className="print-block">
         <h2>Datos del paciente</h2>
@@ -247,6 +253,8 @@ export default function PrintPage() {
           <div className="sub">FIRMA DEL PROFESIONAL</div>
         </div>
       </section>
+      </>
+      )}
       </div>
 
       <div className="print-sheet">

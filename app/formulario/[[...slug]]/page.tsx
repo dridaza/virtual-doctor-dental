@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { ALERTAS_SPA, mergeSpa, pickPaciente, SpaPaciente } from '@/lib/spa-ficha';
 import { moduleConfig } from '@/lib/modules';
 import { useParams, useSearchParams } from 'next/navigation';
 import { PatientQuestionnaire, IntakeForm, defaultQuestionnaire } from '@/lib/intake';
@@ -240,6 +241,7 @@ export default function FormularioPage() {
             habitos: intake.habitos,
             declaracionAceptada: intake.declaracionAceptada,
             firmaAutorizacion: intake.firmaAutorizacion || '',
+            spa: pickPaciente(mergeSpa(intake.spa)),
           });
           if (intake.fotoUrl) setFotoPreview(intake.fotoUrl);
         }
@@ -247,6 +249,12 @@ export default function FormularioPage() {
       .finally(() => setLoading(false));
   }, [contactId]);
 
+  function setSpa<K extends keyof SpaPaciente>(key: K, v: SpaPaciente[K]) {
+    setQ((prev) => ({ ...prev, spa: { ...prev.spa, [key]: v } }));
+  }
+  function setSpaAlerta(key: string, v: boolean) {
+    setQ((prev) => ({ ...prev, spa: { ...prev.spa, alertas: { ...prev.spa.alertas, [key]: v } } }));
+  }
   function setFamiliar<K extends keyof IntakeForm['familiar']>(key: K, v: IntakeForm['familiar'][K]) {
     setQ((prev) => ({ ...prev, familiar: { ...prev.familiar, [key]: v } }));
   }
@@ -329,7 +337,7 @@ export default function FormularioPage() {
         <img src="/clinic-logo.png" alt="Logo" />
         <div className="public-form-header-text">
           <div className="brand-name">{process.env.NEXT_PUBLIC_CLINIC_NAME}</div>
-          <div className="sub">Historia clínica del paciente</div>
+          <div className="sub">{moduleConfig.id === 'spa' ? 'Ficha personal de primera vez' : 'Historia clínica del paciente'}</div>
         </div>
         <PhotoPicker
           preview={fotoPreview}
@@ -341,7 +349,7 @@ export default function FormularioPage() {
 
       <p className="hint public-form-intro">
         Completa este formulario con tus datos y antecedentes de salud. Esta información es confidencial y solo la
-        usará tu odontólogo para tu atención.
+        usará {moduleConfig.id === 'spa' ? 'el equipo profesional' : 'tu odontólogo'} para tu atención.
       </p>
 
       <form className="public-form" onSubmit={submit}>
@@ -375,6 +383,78 @@ export default function FormularioPage() {
           </div>
         </section>
 
+        {moduleConfig.id === 'spa' ? (
+          <>
+            <section className="card">
+              <h3>Datos adicionales</h3>
+              <div className="grid2">
+                <Field label="Ocupación">
+                  <input type="text" value={q.spa.ocupacion} onChange={(e) => setSpa('ocupacion', e.target.value)} />
+                </Field>
+                <Field label="Cómo nos conoció / quién te refirió">
+                  <input type="text" value={q.referidoPor} onChange={(e) => setQ({ ...q, referidoPor: e.target.value })} />
+                </Field>
+                <Field label="Contacto de emergencia">
+                  <input type="text" value={q.spa.emergenciaNombre} onChange={(e) => setSpa('emergenciaNombre', e.target.value)} />
+                </Field>
+                <Field label="Teléfono de emergencia">
+                  <input type="text" value={q.spa.emergenciaTel} onChange={(e) => setSpa('emergenciaTel', e.target.value)} />
+                </Field>
+              </div>
+            </section>
+
+            <section className="card">
+              <h3>Motivo de consulta y autorizaciones</h3>
+              <Field label="Motivo principal / objetivo">
+                <textarea value={q.motivoConsulta} onChange={(e) => setQ({ ...q, motivoConsulta: e.target.value })} rows={2} />
+              </Field>
+              <Field label="Tratamiento de interés">
+                <input type="text" value={q.spa.tratamientoInteres} onChange={(e) => setSpa('tratamientoInteres', e.target.value)} />
+              </Field>
+              <div className="checkrow wrap">
+                <label className="checkbox"><input type="checkbox" checked={q.spa.autorizaApertura} onChange={(e) => setSpa('autorizaApertura', e.target.checked)} /> Autorizo la apertura de mi expediente y la valoración inicial</label>
+                <label className="checkbox"><input type="checkbox" checked={q.spa.avisoPrivacidad} onChange={(e) => setSpa('avisoPrivacidad', e.target.checked)} /> Recibí / vi el aviso de privacidad</label>
+                <label className="checkbox"><input type="checkbox" checked={q.spa.autorizaContacto} onChange={(e) => setSpa('autorizaContacto', e.target.checked)} /> Autorizo contacto para seguimiento o reacción</label>
+              </div>
+              <div className="qrow">
+                <span>¿Autorizas fotografías clínicas?</span>
+                <div className="yesno">
+                  <button type="button" className={q.spa.fotosClinicas === 'si' ? 'active' : ''} onClick={() => setSpa('fotosClinicas', 'si')}>Sí</button>
+                  <button type="button" className={q.spa.fotosClinicas === 'no' ? 'active' : ''} onClick={() => setSpa('fotosClinicas', 'no')}>No</button>
+                </div>
+              </div>
+              <p className="hint">Cada tratamiento tendrá además su consentimiento informado específico.</p>
+            </section>
+
+            <section className="card spa-alertas">
+              <h3>Antecedentes importantes / alertas</h3>
+              <div className="grid2">
+                <Field label="Alergias">
+                  <input type="text" value={q.spa.alergias} onChange={(e) => setSpa('alergias', e.target.value)} />
+                </Field>
+                <Field label="Medicamentos actuales">
+                  <input type="text" value={q.spa.medicamentosActuales} onChange={(e) => setSpa('medicamentosActuales', e.target.value)} />
+                </Field>
+              </div>
+              <p className="hint">Marca lo que te aplique:</p>
+              <div className="checkrow wrap">
+                {ALERTAS_SPA.map(([k, label]) => (
+                  <label key={k} className="checkbox">
+                    <input type="checkbox" checked={!!q.spa.alertas[k]} onChange={(e) => setSpaAlerta(k, e.target.checked)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <Field label="Otra alerta">
+                <input type="text" value={q.spa.otraAlerta} onChange={(e) => setSpa('otraAlerta', e.target.value)} />
+              </Field>
+              <Field label="Observaciones">
+                <textarea value={q.spa.observaciones} onChange={(e) => setSpa('observaciones', e.target.value)} rows={2} />
+              </Field>
+            </section>
+          </>
+        ) : (
+          <>
         <section className="card">
           <h3>Motivo de consulta</h3>
           <Field label="¿Qué te trae a la consulta?">
@@ -472,18 +552,27 @@ export default function FormularioPage() {
           </div>
         </section>
 
+          </>
+        )}
+
         <section
           className={`card signature-section${error && (!q.declaracionAceptada || !q.firmaAutorizacion.trim() || !signatureDataUrl) ? ' invalid' : ''}`}
           ref={signatureRef}
         >
           <h3>Declaración y autorización del paciente</h3>
           <p>
+            {moduleConfig.id === 'spa'
+              ? 'Declaro que la información proporcionada es verdadera y entiendo que debo avisar cualquier cambio de salud, medicamento, embarazo/lactancia, exposición solar o reacción previa antes de cada sesión. Esta ficha no sustituye el consentimiento específico de cada procedimiento.'
+              : (
+              <>
             Declaro que la información proporcionada en esta historia clínica es verdadera y completa, según mi
             conocimiento. Me comprometo a informar al odontólogo cualquier cambio en mi estado de salud,
             diagnóstico, medicación, alergia, embarazo o tratamiento médico que pueda influir en mi atención
             médica y odontológica. Esta declaración acredita y autoriza al odontólogo y personal dentro de la
             consulta a revisar, tomar estudios, explorar físicamente, toma de fotografías, toma de videos con
             fines que el profesional convenga.
+              </>
+              )}
           </p>
 
           <Field label="Nombre completo *">
