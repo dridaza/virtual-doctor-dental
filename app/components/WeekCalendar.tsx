@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import EditarCita, { CitaEditable } from './EditarCita';
 
 type Event = {
   id: string;
@@ -11,6 +12,7 @@ type Event = {
   startTime: string;
   endTime: string;
   status: string;
+  calendarId?: string;
   color?: string;
   dateKey: string;
 };
@@ -18,7 +20,7 @@ type Event = {
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const TIMEZONE = 'America/Mexico_City';
 
-function useWeek(offset: number) {
+function useWeek(offset: number, reloadKey = 0) {
   const [events, setEvents] = useState<Event[]>([]);
   const [dayKeys, setDayKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ function useWeek(offset: number) {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [offset]);
+  }, [offset, reloadKey]);
 
   // Cada día se identifica por su fecha YYYY-MM-DD ya calculada en el
   // servidor en la zona horaria de la clínica, así que aquí solo se compara
@@ -49,7 +51,7 @@ function useWeek(offset: number) {
   return { days, loading, error };
 }
 
-function DayColumn({ day, onSelect }: { day: { label: string; dayNumber: number; events: Event[] }; onSelect: (id: string) => void }) {
+function DayColumn({ day, onSelect }: { day: { label: string; dayNumber: number; events: Event[] }; onSelect: (ev: Event) => void }) {
   return (
     <div className="week-day">
       <div className="week-day-header">
@@ -64,7 +66,7 @@ function DayColumn({ day, onSelect }: { day: { label: string; dayNumber: number;
             type="button"
             className={`week-event status-${ev.status}${ev.color ? ' has-color' : ''}`}
             style={ev.color ? ({ '--ev-color': ev.color } as React.CSSProperties) : undefined}
-            onClick={() => onSelect(ev.contactId)}
+            onClick={() => onSelect(ev)}
             title={ev.title}
           >
             <span className="week-event-time">
@@ -82,8 +84,10 @@ export default function WeekCalendar() {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [offset, setOffset] = useState(0);
-  const { days, loading, error } = useWeek(offset);
-  const select = (id: string) => router.push(`/patients/${id}`);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [selected, setSelected] = useState<Event | null>(null);
+  const { days, loading, error } = useWeek(offset, reloadKey);
+  const select = (ev: Event) => setSelected(ev);
 
   return (
     <div className="card">
@@ -101,6 +105,16 @@ export default function WeekCalendar() {
         <div className="week-grid">
           {days.map((day) => <DayColumn key={day.label} day={day} onSelect={select} />)}
         </div>
+      )}
+
+      {selected && createPortal(
+        <EditarCita
+          cita={selected as CitaEditable}
+          onClose={() => setSelected(null)}
+          onOpenPatient={(id) => router.push(`/patients/${id}`)}
+          onSaved={() => { setSelected(null); setReloadKey((k) => k + 1); }}
+        />,
+        document.body
       )}
 
       {expanded && createPortal(

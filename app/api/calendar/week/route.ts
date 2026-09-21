@@ -114,6 +114,7 @@ export async function GET(request: Request) {
           startTime: e.startTime,
           endTime: e.endTime,
           status: e.appointmentStatus,
+          calendarId: e.calendarId,
           color: colorByCalendar.get(e.calendarId) || '',
           dateKey: ymdString(new Date(e.startTime), TIMEZONE),
         });
