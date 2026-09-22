@@ -173,7 +173,12 @@ input[type="number"]:focus, textarea:focus, select:focus {
   background: var(--surface);
 }
 
-.controls input[type="text"] { min-width: 220px; }
+.controls input[type="text"] {
+  min-width: 220px;
+  background: var(--accent-weak);
+  border-color: rgba(0, 113, 227, 0.22);
+}
+.controls input[type="text"]::placeholder { color: var(--text-dim); }
 
 textarea { resize: vertical; width: 100%; }
 

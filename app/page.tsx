@@ -263,7 +263,7 @@ export default function Dashboard() {
                     <td>{p.firstName || '—'}</td>
                     <td>{p.lastName || '—'}</td>
                     <td>{p.phone || '—'}</td>
-                    <td>{p.email || '—'}{p.email && <EmailButton email={p.email} />}</td>
+                    <td>{p.email || '—'}{p.email && <EmailButton contactId={p.id} email={p.email} patientName={[p.firstName, p.lastName].filter(Boolean).join(' ')} />}</td>
                     <td><TagList tags={p.tags} /></td>
                     <td>{formatDate(p.ultimaActividad)}</td>
                   </tr>

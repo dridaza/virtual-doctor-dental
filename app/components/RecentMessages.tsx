@@ -108,7 +108,7 @@ export default function RecentMessages() {
               {c.lastMessageBody}
             </div>
             <div className="message-actions" onClick={(e) => e.stopPropagation()}>
-              {c.email && <EmailButton email={c.email} />}
+              {c.email && <EmailButton contactId={c.contactId} email={c.email} patientName={c.contactName} />}
               <button type="button" className="contact-btn reply" onClick={(e) => openReply(c, e)}>Responder</button>
             </div>
 

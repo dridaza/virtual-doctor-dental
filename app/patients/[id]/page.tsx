@@ -650,7 +650,7 @@ export default function PatientPage() {
           <Field label="Nombre" value={patient.firstName} onSave={(v) => updatePatientField('firstName', v)} />
           <Field label="Apellido" value={patient.lastName} onSave={(v) => updatePatientField('lastName', v)} />
           <Field label="Teléfono" value={patient.phone} onSave={(v) => updatePatientField('phone', v)} />
-          <Field label="Email" value={patient.email} onSave={(v) => updatePatientField('email', v)} extra={patient.email ? <EmailButton email={patient.email} /> : null} />
+          <Field label="Email" value={patient.email} onSave={(v) => updatePatientField('email', v)} extra={patient.email ? <EmailButton contactId={patient.id} email={patient.email} patientName={patient.name} /> : null} />
           <Field
             label="Fecha de nacimiento"
             value={patient.dateOfBirth?.slice(0, 10) || ''}
