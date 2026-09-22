@@ -29,6 +29,7 @@ export const HC_ANNOTATION_PREFIX = '[HC-anotacion v1]';
 export const HC_RECETA_PREFIX = '[HC-receta v1]';
 export const HC_CONSENT_PREFIX = '[HC-consent v1]';
 export const HC_PAQUETE_PREFIX = '[HC-paquete v1]';
+export const HC_TRATAMIENTO_PREFIX = '[HC-tratamiento v1]';
 
 export async function ghlFetch<T = any>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {

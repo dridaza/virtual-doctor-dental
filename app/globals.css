@@ -1968,3 +1968,11 @@ button.tint-amber:hover, .button.tint-amber:hover { background: linear-gradient(
 
 .camera-preview { margin: 10px 0; border-radius: var(--radius-sm); overflow: hidden; background: #000; }
 .camera-preview video { display: block; width: 100%; max-height: 60vh; }
+
+/* Fichas de tratamiento (Spa) */
+.tratamiento-campos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 16px; margin: 10px 0; }
+@media (max-width: 800px) { .tratamiento-campos-grid { grid-template-columns: 1fr 1fr; } }
+.tratamiento-valor { padding: 8px 0; font-size: 0.9rem; }
+.tratamiento-multi { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 0; }
+.tratamiento-check { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 400; }
+.tratamiento-consent { background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 12px; font-size: 0.85rem; line-height: 1.4; }

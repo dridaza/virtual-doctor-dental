@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import ConsentimientosInformadosCard from '@/app/components/ConsentimientosInformadosCard';
+import TratamientosSeguimientoCard from '@/app/components/TratamientosSeguimientoCard';
 import MedicalFichaView from './MedicalFichaView';
 import PaquetesCard, { PaqueteUI } from '../../components/PaquetesCard';
 import { moduleConfig } from '@/lib/modules';
@@ -780,6 +781,7 @@ export default function PatientPage() {
           )}
 
           {moduleConfig.consentimientosInformados && patient && <ConsentimientosInformadosCard patientId={id} patientName={patient.name} />}
+          {moduleConfig.tratamientosPorSesion && patient && <TratamientosSeguimientoCard patientId={id} patientName={patient.name} />}
           <form className="card visit-form" onSubmit={submitVisit}>
             <h3>Agregar visita</h3>
             <p className="hint">{moduleConfig.visitaHint} El cargo que anotes aquí aparece automáticamente en Facturación.</p>
