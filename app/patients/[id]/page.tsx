@@ -15,6 +15,8 @@ import DuplicatesPanel from './DuplicatesPanel';
 import FacturacionGate from '../../components/FacturacionGate';
 import AgendarCita from '../../components/AgendarCita';
 import NuevoPresupuesto from '../../components/NuevoPresupuesto';
+import ImageEditor from '../../components/ImageEditor';
+import CameraCapture from '../../components/CameraCapture';
 
 type Patient = {
   id: string;
@@ -480,6 +482,8 @@ export default function PatientPage() {
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryError, setGalleryError] = useState('');
   const [deletingImg, setDeletingImg] = useState<string | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [editorBlob, setEditorBlob] = useState<Blob | null>(null);
   const galleryFileRef = useRef<HTMLInputElement>(null);
   const galleryCameraRef = useRef<HTMLInputElement>(null);
 
@@ -607,15 +611,12 @@ export default function PatientPage() {
     }
   }
 
-  async function onGalleryFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
+  async function uploadGalleryBlob(blob: Blob, name: string) {
     setGalleryUploading(true);
     setGalleryError('');
     try {
       const form = new FormData();
-      form.append('file', file, file.name || 'imagen.jpg');
+      form.append('file', blob, name);
       const res = await fetch(`/api/patients/${id}/images`, { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo subir la imagen');
@@ -626,6 +627,29 @@ export default function PatientPage() {
       setGalleryUploading(false);
     }
   }
+
+  // "Subir foto", pegar (Ctrl+V) y la cámara del celular pasan primero por el editor, para poder
+  // recortar antes de guardar; "Confirmar" ahí llama a uploadGalleryBlob.
+  function onGalleryFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setEditorBlob(file);
+  }
+
+  useEffect(() => {
+    if (!showGallery) return;
+    function onPaste(e: ClipboardEvent) {
+      const item = Array.from(e.clipboardData?.items || []).find((it) => it.type.startsWith('image/'));
+      const file = item?.getAsFile();
+      if (file) {
+        e.preventDefault();
+        setEditorBlob(file);
+      }
+    }
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [showGallery]);
 
   async function deleteGalleryImage(url: string) {
     if (!confirm('¿Eliminar esta imagen?')) return;
@@ -1142,12 +1166,14 @@ export default function PatientPage() {
               <button type="button" className="primary" disabled={galleryUploading} onClick={() => galleryFileRef.current?.click()}>
                 {galleryUploading ? 'Subiendo…' : 'Subir foto'}
               </button>
-              <button type="button" disabled={galleryUploading} onClick={() => galleryCameraRef.current?.click()}>
+              <button type="button" disabled={galleryUploading} onClick={() => setShowCamera(true)}>
                 Tomar foto
               </button>
               <input ref={galleryFileRef} type="file" accept="image/*" onChange={onGalleryFileSelected} hidden />
               <input ref={galleryCameraRef} type="file" accept="image/*" capture="environment" onChange={onGalleryFileSelected} hidden />
             </div>
+            <p className="hint">También puedes pegar una imagen copiada con Ctrl+V.</p>
+            {galleryUploading && <p className="hint">Subiendo imagen…</p>}
             {galleryError && <p className="status-line error">{galleryError}</p>}
             {intake.imagenes.length === 0 ? (
               <div className="empty">Sin imágenes registradas.</div>
@@ -1180,6 +1206,22 @@ export default function PatientPage() {
         <div className="overlay lightbox" onClick={() => setLightboxUrl(null)}>
           <img src={lightboxUrl} alt="" />
         </div>
+      )}
+
+      {showCamera && (
+        <CameraCapture
+          onCancel={() => setShowCamera(false)}
+          onCapture={(blob) => { setShowCamera(false); setEditorBlob(blob); }}
+          onFallback={() => { setShowCamera(false); galleryCameraRef.current?.click(); }}
+        />
+      )}
+
+      {editorBlob && (
+        <ImageEditor
+          blob={editorBlob}
+          onCancel={() => setEditorBlob(null)}
+          onConfirm={(out) => { setEditorBlob(null); uploadGalleryBlob(out, 'imagen.jpg'); }}
+        />
       )}
 
       {showDuplicates && (
