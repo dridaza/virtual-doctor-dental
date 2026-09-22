@@ -651,6 +651,25 @@ export default function PatientPage() {
     return () => window.removeEventListener('paste', onPaste);
   }, [showGallery]);
 
+  // Botón explícito para pegar (además del Ctrl+V): lee el portapapeles directamente, sin
+  // depender de que el usuario sepa que puede pegar con el teclado.
+  async function pegarDelPortapapeles() {
+    setGalleryError('');
+    try {
+      if (!navigator.clipboard?.read) throw new Error('Este navegador no permite leer el portapapeles con un botón; copia la imagen y presiona Ctrl+V (Cmd+V en Mac) dentro de esta ventana.');
+      const items = await navigator.clipboard.read();
+      let blob: Blob | null = null;
+      for (const item of items) {
+        const type = item.types.find((t) => t.startsWith('image/'));
+        if (type) { blob = await item.getType(type); break; }
+      }
+      if (!blob) throw new Error('No hay ninguna imagen copiada. Copia una imagen (clic derecho → Copiar imagen, o una captura de pantalla) e inténtalo de nuevo.');
+      setEditorBlob(blob);
+    } catch (err: any) {
+      setGalleryError(err?.message || 'No se pudo leer el portapapeles. Copia la imagen e inténtalo de nuevo.');
+    }
+  }
+
   async function deleteGalleryImage(url: string) {
     if (!confirm('¿Eliminar esta imagen?')) return;
     setDeletingImg(url);
@@ -1169,10 +1188,13 @@ export default function PatientPage() {
               <button type="button" disabled={galleryUploading} onClick={() => setShowCamera(true)}>
                 Tomar foto
               </button>
+              <button type="button" disabled={galleryUploading} onClick={pegarDelPortapapeles}>
+                Pegar imagen
+              </button>
               <input ref={galleryFileRef} type="file" accept="image/*" onChange={onGalleryFileSelected} hidden />
               <input ref={galleryCameraRef} type="file" accept="image/*" capture="environment" onChange={onGalleryFileSelected} hidden />
             </div>
-            <p className="hint">También puedes pegar una imagen copiada con Ctrl+V.</p>
+            <p className="hint">Para pegar: primero copia una imagen (clic derecho sobre una foto → Copiar imagen, o una captura de pantalla), luego pulsa "Pegar imagen" arriba o presiona Ctrl+V (Cmd+V en Mac) aquí.</p>
             {galleryUploading && <p className="hint">Subiendo imagen…</p>}
             {galleryError && <p className="status-line error">{galleryError}</p>}
             {intake.imagenes.length === 0 ? (
