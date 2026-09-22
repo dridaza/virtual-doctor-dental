@@ -12,13 +12,15 @@ function horaLocal(iso: string) {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: TZ, hour12: false });
 }
 
-// Confirmación al soltar una cita sobre otro día: se puede ajustar la hora antes de moverla.
+// Confirmación al soltar una cita sobre otro día: se puede ajustar la hora, y también la fecha por
+// si el destino real está en otra semana o mes (el calendario solo muestra unos días a la vez).
 export default function MoverCita({ ev, dateKey, dayLabel, allEvents, onClose, onMoved }: { ev: Ev; dateKey: string; dayLabel: string; allEvents: Ev[]; onClose: () => void; onMoved: () => void }) {
+  const [fecha, setFecha] = useState(dateKey);
   const [hora, setHora] = useState(horaLocal(ev.startTime));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const inicio = new Date(`${dateKey}T${hora || '00:00'}:00${OFFSET}`);
+  const inicio = new Date(`${fecha}T${hora || '00:00'}:00${OFFSET}`);
   const valido = !Number.isNaN(inicio.getTime());
   const duracion = new Date(ev.endTime).getTime() - new Date(ev.startTime).getTime();
   const fin = valido ? new Date(inicio.getTime() + duracion) : null;
@@ -54,10 +56,15 @@ export default function MoverCita({ ev, dateKey, dayLabel, allEvents, onClose, o
         <div className="modal-header"><h2>Mover cita</h2></div>
         <p style={{ margin: '0 0 6px' }}><strong>{ev.title}</strong></p>
         <p className="hint">De: {antes}</p>
-        <p className="hint">A: {dayLabel}</p>
-        <label className="field" style={{ marginTop: 10 }}><span>Hora</span>
-          <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
-        </label>
+        <p className="hint">A: soltaste la cita en {dayLabel}, pero puedes cambiar la fecha abajo (cualquier semana o mes).</p>
+        <div className="grid2">
+          <label className="field"><span>Fecha</span>
+            <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          </label>
+          <label className="field"><span>Hora</span>
+            <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+          </label>
+        </div>
         {choque && <p className="status-line error">Ya hay una cita en este calendario a esa hora: {choque.title}. Puedes moverla igual.</p>}
         <p className="hint">GHL avisará al paciente del cambio si el calendario lo tiene configurado.</p>
         {error && <p className="status-line error">{error}</p>}
