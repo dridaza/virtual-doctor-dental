@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ghlFetch, getLocationId } from '@/lib/ghl';
 import { getNumeroHistoriaClinica } from '@/lib/historia-clinica';
+import { CHAT_CONTACT_TAG } from '@/lib/team-chat';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -32,7 +33,9 @@ export async function GET(request: Request) {
       }),
     });
 
-    const rawContacts = data.contacts || [];
+    // El contacto oculto que usa el chat interno para guardar sus mensajes (ver lib/team-chat.ts)
+    // no es un paciente y nunca debe aparecer en esta lista.
+    const rawContacts = (data.contacts || []).filter((c) => !(c.tags || []).includes(CHAT_CONTACT_TAG));
     const contacts = rawContacts.map((c) => ({
       id: c.id,
       firstName: c.firstName || '',

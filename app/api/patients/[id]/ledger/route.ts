@@ -20,6 +20,7 @@ type LedgerRow = {
   notaTexto?: string;
   notaId?: string;
   citaId?: string;
+  citaTitulo?: string;
   paqueteId?: string;
   soap?: Soap;
   presupuesto?: number;
@@ -185,6 +186,17 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       noteRows.push({ id: r.value.id, source: 'nota', fecha: r.value.a.fecha, tratamiento: '', pieza: '', material: '', cargo: 0, pago: 0, citaId: r.value.a.id });
     }
     const visibleAppointments = appointmentRows.filter((a) => !linked.has(a.id));
+
+    // El título de la cita ("[Qx] - Nombre", lo pone GHL) se guarda aparte de "tratamiento": ese campo
+    // es lo que se hizo de verdad y lo llena el personal. Mientras esté vacío, el título ayuda a
+    // identificar de qué cita es la nota en vez de un "Pendiente de llenar" sin más contexto.
+    const tituloPorCitaId = new Map(appointmentRows.map((a) => [a.id, a.tratamiento]));
+    for (const n of noteRows) {
+      if (n.citaId && !n.tratamiento) {
+        const titulo = tituloPorCitaId.get(n.citaId);
+        if (titulo) n.citaTitulo = titulo;
+      }
+    }
 
     const annotationByRefId = new Map(annotations.map((a) => [a.refId, a]));
     for (const row of [...invoiceRows, ...visibleAppointments]) {
