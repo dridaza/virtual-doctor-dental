@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { ghlFetch, getLocationId } from '@/lib/ghl';
+import { getLocationCalendars } from '@/lib/ghl';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const data = await ghlFetch<{ calendars: any[] }>(`/calendars/?locationId=${getLocationId()}`);
-    const calendars = (data.calendars || [])
+    const data = await getLocationCalendars();
+    const calendars = data
       .filter((c) => c.isActive !== false)
       .map((c) => ({ id: c.id, name: c.name, duracionMin: Number(c.slotDuration || 60) * (c.slotDurationUnit === 'hours' ? 60 : 1) }))
       .sort((a, b) => a.name.localeCompare(b.name, 'es'));

@@ -41,7 +41,8 @@ export default function ConversationModal({ conv, onClose, onOpenPatient }: { co
 
   useEffect(() => {
     cargar();
-    const t = setInterval(() => { if (document.visibilityState === 'visible') cargar(); }, 10000);
+    // ±15% de variación para no pedir todos los usuarios al mismo segundo exacto.
+    const t = setInterval(() => { if (document.visibilityState === 'visible') cargar(); }, 12000 + (Math.random() - 0.5) * 3600);
     return () => clearInterval(t);
   }, [cargar]);
 

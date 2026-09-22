@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { ghlFetch, getLocationId } from './ghl';
+import { ghlFetch, getLocationId, getLocationCustomValues, invalidateCustomValuesCache } from './ghl';
 import { SESSION_COOKIE, verifySession } from './session';
 
 const CUSTOM_VALUE_NAME = 'Virtual Doctor - Log';
@@ -8,8 +8,8 @@ const MAX_ENTRIES = 400;
 type Entry = { t: string; u: string; a: string; d: string };
 
 async function findCustomValue() {
-  const data = await ghlFetch<{ customValues: any[] }>(`/locations/${getLocationId()}/customValues`);
-  return (data.customValues || []).find((v: any) => v.name === CUSTOM_VALUE_NAME) || null;
+  const customValues = await getLocationCustomValues();
+  return customValues.find((v: any) => v.name === CUSTOM_VALUE_NAME) || null;
 }
 
 export async function currentUserEmail(): Promise<string> {
@@ -37,6 +37,7 @@ export async function logEvent(action: string, detail = '', user?: string): Prom
     const body = JSON.stringify({ name: CUSTOM_VALUE_NAME, value: JSON.stringify(entries.slice(-MAX_ENTRIES)) });
     if (cv) await ghlFetch(`/locations/${getLocationId()}/customValues/${cv.id}`, { method: 'PUT', body });
     else await ghlFetch(`/locations/${getLocationId()}/customValues`, { method: 'POST', body });
+  invalidateCustomValuesCache();
   } catch {
     /* ignorar */
   }

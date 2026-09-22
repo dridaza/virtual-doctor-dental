@@ -127,8 +127,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!autoRefresh) return;
-    const id = setInterval(() => fetchPatients(query || undefined), AUTO_REFRESH_MS);
-    return () => clearInterval(id);
+    // Un desfase inicial al azar evita que muchas pestañas abiertas casi al mismo tiempo
+    // (varias personas del equipo entrando juntas) pidan todas a GoHighLevel en el mismo instante.
+    const jitter = Math.floor(Math.random() * AUTO_REFRESH_MS);
+    const start = setTimeout(() => fetchPatients(query || undefined), jitter);
+    let id: ReturnType<typeof setInterval> | null = null;
+    const startInterval = setTimeout(() => {
+      id = setInterval(() => fetchPatients(query || undefined), AUTO_REFRESH_MS);
+    }, jitter);
+    return () => {
+      clearTimeout(start);
+      clearTimeout(startInterval);
+      if (id) clearInterval(id);
+    };
   }, [autoRefresh, fetchPatients, query]);
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -1,12 +1,12 @@
-import { ghlFetch, getLocationId } from './ghl';
+import { ghlFetch, getLocationId, getLocationCustomValues, invalidateCustomValuesCache } from './ghl';
 
 const CUSTOM_VALUE_NAME = 'Virtual Doctor - Usuarios';
 
 export type StoredUser = { email: string; nombre: string; passwordHash: string };
 
 async function findCustomValue() {
-  const data = await ghlFetch<{ customValues: any[] }>(`/locations/${getLocationId()}/customValues`);
-  return (data.customValues || []).find((v: any) => v.name === CUSTOM_VALUE_NAME) || null;
+  const customValues = await getLocationCustomValues();
+  return customValues.find((v: any) => v.name === CUSTOM_VALUE_NAME) || null;
 }
 
 export async function getStoredUsers(): Promise<StoredUser[]> {
@@ -27,6 +27,7 @@ export async function saveStoredUsers(users: StoredUser[]): Promise<void> {
   } else {
     await ghlFetch(`/locations/${getLocationId()}/customValues`, { method: 'POST', body });
   }
+  invalidateCustomValuesCache();
 }
 
 // Los usuarios que pueden entrar al dashboard son exclusivamente los que ya

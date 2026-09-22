@@ -1,4 +1,4 @@
-import { ghlFetch, getLocationId } from './ghl';
+import { ghlFetch, getLocationId, getLocationCustomValues, invalidateCustomValuesCache } from './ghl';
 
 export const CREATOR_PROFILE_CUSTOM_VALUE_NAME = 'Virtual Doctor - Perfil del creador';
 
@@ -16,8 +16,8 @@ export function defaultCreatorProfile(): CreatorProfile {
 }
 
 export async function findCreatorProfileCustomValue() {
-  const data = await ghlFetch<{ customValues: any[] }>(`/locations/${getLocationId()}/customValues`);
-  return (data.customValues || []).find((v: any) => v.name === CREATOR_PROFILE_CUSTOM_VALUE_NAME) || null;
+  const customValues = await getLocationCustomValues();
+  return customValues.find((v: any) => v.name === CREATOR_PROFILE_CUSTOM_VALUE_NAME) || null;
 }
 
 export async function getCreatorProfile(): Promise<CreatorProfile> {

@@ -1,4 +1,4 @@
-import { ghlFetch, getLocationId } from './ghl';
+import { ghlFetch, getLocationId, getLocationCustomValues, invalidateCustomValuesCache } from './ghl';
 
 const PREFIX = 'Virtual Doctor - Actividad - ';
 const KEEP_DAYS = 90;
@@ -12,8 +12,8 @@ export function mexicoDay(date: Date): string {
 }
 
 async function findCustomValue(email: string) {
-  const data = await ghlFetch<{ customValues: any[] }>(`/locations/${getLocationId()}/customValues`);
-  return (data.customValues || []).find((v: any) => v.name === PREFIX + email.toLowerCase()) || null;
+  const customValues = await getLocationCustomValues();
+  return customValues.find((v: any) => v.name === PREFIX + email.toLowerCase()) || null;
 }
 
 function parse(value: string | undefined): ActivityStore {
@@ -52,4 +52,5 @@ export async function addHeartbeat(email: string): Promise<void> {
   const body = JSON.stringify({ name: PREFIX + email.toLowerCase(), value: JSON.stringify(store) });
   if (cv) await ghlFetch(`/locations/${getLocationId()}/customValues/${cv.id}`, { method: 'PUT', body });
   else await ghlFetch(`/locations/${getLocationId()}/customValues`, { method: 'POST', body });
+  invalidateCustomValuesCache();
 }

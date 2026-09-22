@@ -1,4 +1,4 @@
-import { ghlFetch, getLocationId } from './ghl';
+import { ghlFetch, getLocationId, getLocationCustomValues, invalidateCustomValuesCache } from './ghl';
 
 const CUSTOM_VALUE_NAME = 'Virtual Doctor - Perfil profesional';
 
@@ -17,8 +17,8 @@ export function emptyProfessional(): ProfessionalProfile {
 }
 
 async function findCustomValue() {
-  const data = await ghlFetch<{ customValues: any[] }>(`/locations/${getLocationId()}/customValues`);
-  return (data.customValues || []).find((v: any) => v.name === CUSTOM_VALUE_NAME) || null;
+  const customValues = await getLocationCustomValues();
+  return customValues.find((v: any) => v.name === CUSTOM_VALUE_NAME) || null;
 }
 
 export async function getProfessionalProfile(): Promise<ProfessionalProfile> {
@@ -36,4 +36,5 @@ export async function saveProfessionalProfile(profile: ProfessionalProfile): Pro
   const body = JSON.stringify({ name: CUSTOM_VALUE_NAME, value: JSON.stringify(profile) });
   if (cv) await ghlFetch(`/locations/${getLocationId()}/customValues/${cv.id}`, { method: 'PUT', body });
   else await ghlFetch(`/locations/${getLocationId()}/customValues`, { method: 'POST', body });
+  invalidateCustomValuesCache();
 }

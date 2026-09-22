@@ -29,7 +29,9 @@ export default function ChatWidget() {
   useEffect(() => {
     try { setSeen(localStorage.getItem('vd_chat_seen') || ''); } catch {}
     load();
-    const t = setInterval(load, open ? 4000 : 20000);
+    // Un poco de variación (±15%) para que el equipo entero no pida todos a la vez.
+    const base = open ? 6000 : 25000;
+    const t = setInterval(load, base + (Math.random() - 0.5) * base * 0.3);
     return () => clearInterval(t);
   }, [load, open]);
 

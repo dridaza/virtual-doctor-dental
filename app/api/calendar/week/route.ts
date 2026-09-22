@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ghlFetch, getLocationId } from '@/lib/ghl';
+import { ghlFetch, getLocationId, getLocationCalendars } from '@/lib/ghl';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -80,10 +80,7 @@ export async function GET(request: Request) {
     const weekEndUtc = localMidnightUtc(days[6], TIMEZONE);
     weekEndUtc.setUTCDate(weekEndUtc.getUTCDate() + 1);
 
-    const calendarsData = await ghlFetch<{ calendars: any[] }>(
-      `/calendars/?locationId=${getLocationId()}`
-    );
-    const calendars = calendarsData.calendars || [];
+    const calendars = await getLocationCalendars();
     const groupIds = Array.from(new Set(calendars.map((c) => c.groupId).filter(Boolean)));
     const soloCalendarIds = calendars.filter((c) => !c.groupId).map((c) => c.id);
 
