@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { WhatsAppButton, EmailButton } from './ContactActions';
+import { EmailButton } from './ContactActions';
 import ConversationModal from './ConversationModal';
 
 type Conversation = {
@@ -108,7 +108,6 @@ export default function RecentMessages() {
               {c.lastMessageBody}
             </div>
             <div className="message-actions" onClick={(e) => e.stopPropagation()}>
-              {c.phone && <WhatsAppButton phone={c.phone} />}
               {c.email && <EmailButton email={c.email} />}
               <button type="button" className="contact-btn reply" onClick={(e) => openReply(c, e)}>Responder</button>
             </div>

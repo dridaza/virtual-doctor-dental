@@ -10,7 +10,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import IntakeFormView from './IntakeForm';
 import { IntakeForm, defaultIntake } from '@/lib/intake';
-import { WhatsAppButton, EmailButton } from '../../components/ContactActions';
+import { EmailButton } from '../../components/ContactActions';
 import DuplicatesPanel from './DuplicatesPanel';
 import FacturacionGate from '../../components/FacturacionGate';
 import AgendarCita from '../../components/AgendarCita';
@@ -649,7 +649,7 @@ export default function PatientPage() {
         <div className="contact-grid">
           <Field label="Nombre" value={patient.firstName} onSave={(v) => updatePatientField('firstName', v)} />
           <Field label="Apellido" value={patient.lastName} onSave={(v) => updatePatientField('lastName', v)} />
-          <Field label="Teléfono" value={patient.phone} onSave={(v) => updatePatientField('phone', v)} extra={patient.phone ? <WhatsAppButton phone={patient.phone} /> : null} />
+          <Field label="Teléfono" value={patient.phone} onSave={(v) => updatePatientField('phone', v)} />
           <Field label="Email" value={patient.email} onSave={(v) => updatePatientField('email', v)} extra={patient.email ? <EmailButton email={patient.email} /> : null} />
           <Field
             label="Fecha de nacimiento"

@@ -4,7 +4,7 @@ import { CLINIC_LOGO } from '@/lib/clinic-logo';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { WhatsAppButton, EmailButton } from './components/ContactActions';
+import { EmailButton } from './components/ContactActions';
 import WeekCalendar from './components/WeekCalendar';
 import RecentMessages from './components/RecentMessages';
 import DateWeatherQuote from './components/DateWeatherQuote';
@@ -262,7 +262,7 @@ export default function Dashboard() {
                     <td className="hc-number">{p.numeroHistoriaClinica}</td>
                     <td>{p.firstName || '—'}</td>
                     <td>{p.lastName || '—'}</td>
-                    <td>{p.phone || '—'}{p.phone && <WhatsAppButton phone={p.phone} />}</td>
+                    <td>{p.phone || '—'}</td>
                     <td>{p.email || '—'}{p.email && <EmailButton email={p.email} />}</td>
                     <td><TagList tags={p.tags} /></td>
                     <td>{formatDate(p.ultimaActividad)}</td>

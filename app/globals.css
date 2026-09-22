@@ -157,7 +157,7 @@ h1, h2, h3 { letter-spacing: -0.01em; font-weight: 700; }
 
 input[type="text"], input[type="date"], input[type="email"], input[type="tel"], input[type="number"], textarea, select {
   background: var(--surface-2);
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 9px 12px;
   color: var(--text);
