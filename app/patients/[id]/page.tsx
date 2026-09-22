@@ -477,6 +477,11 @@ export default function PatientPage() {
 
   const [showGallery, setShowGallery] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryError, setGalleryError] = useState('');
+  const [deletingImg, setDeletingImg] = useState<string | null>(null);
+  const galleryFileRef = useRef<HTMLInputElement>(null);
+  const galleryCameraRef = useRef<HTMLInputElement>(null);
 
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -599,6 +604,42 @@ export default function PatientPage() {
       }
     } finally {
       setPhotoUploading(false);
+    }
+  }
+
+  async function onGalleryFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setGalleryUploading(true);
+    setGalleryError('');
+    try {
+      const form = new FormData();
+      form.append('file', file, file.name || 'imagen.jpg');
+      const res = await fetch(`/api/patients/${id}/images`, { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'No se pudo subir la imagen');
+      setIntake((prev) => ({ ...prev, imagenes: data.imagenes }));
+    } catch (err: any) {
+      setGalleryError(err.message || 'No se pudo subir la imagen');
+    } finally {
+      setGalleryUploading(false);
+    }
+  }
+
+  async function deleteGalleryImage(url: string) {
+    if (!confirm('¿Eliminar esta imagen?')) return;
+    setDeletingImg(url);
+    try {
+      const res = await fetch(`/api/patients/${id}/images`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (res.ok) setIntake((prev) => ({ ...prev, imagenes: data.imagenes }));
+    } finally {
+      setDeletingImg(null);
     }
   }
 
@@ -1097,15 +1138,37 @@ export default function PatientPage() {
               <h2>Imágenes</h2>
               <button className="close-btn" onClick={() => setShowGallery(false)}>✕</button>
             </div>
+            <div className="gallery-toolbar">
+              <button type="button" className="primary" disabled={galleryUploading} onClick={() => galleryFileRef.current?.click()}>
+                {galleryUploading ? 'Subiendo…' : 'Subir foto'}
+              </button>
+              <button type="button" disabled={galleryUploading} onClick={() => galleryCameraRef.current?.click()}>
+                Tomar foto
+              </button>
+              <input ref={galleryFileRef} type="file" accept="image/*" onChange={onGalleryFileSelected} hidden />
+              <input ref={galleryCameraRef} type="file" accept="image/*" capture="environment" onChange={onGalleryFileSelected} hidden />
+            </div>
+            {galleryError && <p className="status-line error">{galleryError}</p>}
             {intake.imagenes.length === 0 ? (
               <div className="empty">Sin imágenes registradas.</div>
             ) : (
               <div className="gallery-grid">
-                {intake.imagenes.map((img) => (
-                  <button key={img.url} type="button" className="gallery-thumb" onClick={() => setLightboxUrl(img.url)}>
-                    <img src={img.url} alt={img.name} />
-                    <span>{img.name}</span>
-                  </button>
+                {[...intake.imagenes].reverse().map((img) => (
+                  <div key={img.url} className="gallery-thumb">
+                    <button type="button" onClick={() => setLightboxUrl(img.url)}>
+                      <img src={img.url} alt={img.name} />
+                    </button>
+                    <span className="gallery-thumb-name">{img.name}</span>
+                    <span className="gallery-thumb-date">{formatDate(img.uploadedAt)}</span>
+                    <button
+                      type="button"
+                      className="gallery-thumb-delete"
+                      disabled={deletingImg === img.url}
+                      onClick={() => deleteGalleryImage(img.url)}
+                    >
+                      {deletingImg === img.url ? '…' : 'Eliminar'}
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
