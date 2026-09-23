@@ -81,8 +81,23 @@ function checkBasicAuth(request: NextRequest): NextResponse | null {
   });
 }
 
+// Cada instalación puede tener, además de su dominio propio, la URL automática de Vercel (y a
+// veces una más vieja de un renombre anterior) apuntando a lo mismo. Con CANONICAL_DOMAIN puesto,
+// cualquier otro nombre de host se redirige ahí (mismo camino y parámetros), para que en la
+// práctica solo exista un enlace, aunque las otras URLs de Vercel nunca dejen de existir.
+function canonicalRedirect(request: NextRequest): NextResponse | null {
+  const canonical = process.env.CANONICAL_DOMAIN;
+  if (!canonical) return null;
+  const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').split(':')[0];
+  if (!host || host === canonical) return null;
+  return NextResponse.redirect(`https://${canonical}${request.nextUrl.pathname}${request.nextUrl.search}`, 308);
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const redirect = canonicalRedirect(request);
+  if (redirect) return redirect;
 
   const basicAuthChallenge = checkBasicAuth(request);
   if (basicAuthChallenge) return basicAuthChallenge;
