@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { ghlFetch, getLocationId } from '@/lib/ghl';
+import { blockIfNoConversationsAccess } from '@/lib/require-conversations';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  const denied = await blockIfNoConversationsAccess();
+  if (denied) return denied;
+
   const { searchParams } = new URL(request.url);
   const limit = Math.min(Number(searchParams.get('limit')) || 10, 50);
 

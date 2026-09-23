@@ -50,6 +50,39 @@ export async function findGhlUserByEmail(email: string): Promise<{ ok: boolean; 
   return { ok: !!match, nombre: match?.name || match?.firstName || '', phone: match?.phone || '', rol };
 }
 
+// Los permisos detallados de un usuario (los que se editan en GHL, Configuración > Mi equipo >
+// editar usuario > Permisos) solo vienen en /users/{id}, no en la lista; se guardan un rato corto
+// por correo para no pedirlos de nuevo en cada acción de mensajería.
+const permCache = new Map<string, { data: Record<string, boolean> | null; at: number }>();
+const PERM_TTL_MS = 30_000;
+
+async function getGhlUserPermissions(email: string): Promise<Record<string, boolean> | null> {
+  const key = email.toLowerCase();
+  const cached = permCache.get(key);
+  if (cached && Date.now() - cached.at < PERM_TTL_MS) return cached.data;
+  const data = await ghlFetch<{ users: any[] }>(`/users/?locationId=${getLocationId()}`);
+  const match = (data.users || []).find((u: any) => !u.deleted && String(u.email || '').toLowerCase() === key);
+  if (!match) {
+    permCache.set(key, { data: null, at: Date.now() });
+    return null;
+  }
+  const detail = await ghlFetch<any>(`/users/${match.id}`).catch(() => null);
+  const perms = detail?.permissions || null;
+  permCache.set(key, { data: perms, at: Date.now() });
+  return perms;
+}
+
+// Si en GHL le quitaron a este usuario el permiso de "Conversations", la app también se lo
+// respeta: no puede leer ni mandar mensajes a pacientes (SMS, WhatsApp, correo, recibos,
+// recetas...). El dueño de agencia (no es un usuario de esta cuenta de GHL) y cualquier caso
+// donde GHL no informe permisos quedan sin restringir, para no bloquear por error.
+export async function hasConversationsAccess(email: string, rol: string): Promise<boolean> {
+  if (rol === 'Dueño de agencia') return true;
+  const perms = await getGhlUserPermissions(email);
+  if (!perms) return true;
+  return perms.conversationsEnabled !== false;
+}
+
 export async function listGhlUsers(): Promise<{ id: string; email: string; nombre: string; rol: string }[]> {
   const data = await ghlFetch<{ users: any[] }>(`/users/?locationId=${getLocationId()}`);
   return (data.users || [])

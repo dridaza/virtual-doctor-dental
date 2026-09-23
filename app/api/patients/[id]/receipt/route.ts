@@ -6,6 +6,7 @@ import { getNumeroHistoriaClinica } from '@/lib/historia-clinica';
 import { getProfessionalProfile } from '@/lib/professional-profile';
 import { buildReceiptPdf } from '@/lib/receipt-pdf';
 import { uploadPatientFile } from '@/lib/media-upload';
+import { blockIfNoConversationsAccess } from '@/lib/require-conversations';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -18,6 +19,8 @@ export const maxDuration = 60;
 // momento se activa, este es el lugar donde volver a intentarlo.
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: contactId } = await params;
+  const denied = await blockIfNoConversationsAccess();
+  if (denied) return denied;
   try {
     const body = await request.json();
     const fecha = body.fecha || new Date().toISOString();

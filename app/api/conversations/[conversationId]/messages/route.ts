@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ghlFetch } from '@/lib/ghl';
+import { blockIfNoConversationsAccess } from '@/lib/require-conversations';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,8 @@ const CANALES: Record<string, string> = {
 // Mensajes completos de una conversación (más antiguos primero) para leerla sin salir del dashboard.
 export async function GET(request: Request, { params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = await params;
+  const denied = await blockIfNoConversationsAccess();
+  if (denied) return denied;
   try {
     if (!/^[A-Za-z0-9]{6,40}$/.test(conversationId)) return NextResponse.json({ error: 'Conversación inválida' }, { status: 400 });
     const limit = Math.min(Number(new URL(request.url).searchParams.get('limit') || 60), 100);

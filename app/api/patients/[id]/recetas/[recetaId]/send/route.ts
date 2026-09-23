@@ -4,6 +4,7 @@ import { logEvent } from '@/lib/audit-log';
 import { getNumeroHistoriaClinica } from '@/lib/historia-clinica';
 import { buildRecetaPdf } from '@/lib/receta-pdf';
 import { uploadPatientFile } from '@/lib/media-upload';
+import { blockIfNoConversationsAccess } from '@/lib/require-conversations';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -11,6 +12,8 @@ export const maxDuration = 60;
 // Genera la receta en PDF y la envía al paciente por email (adjunta) y/o SMS (con el enlace al PDF).
 export async function POST(request: Request, { params }: { params: Promise<{ id: string; recetaId: string }> }) {
   const { id: contactId, recetaId } = await params;
+  const denied = await blockIfNoConversationsAccess();
+  if (denied) return denied;
   try {
     const { email: byEmail, sms: bySms } = await request.json();
     if (!byEmail && !bySms) return NextResponse.json({ error: 'Elige email o SMS' }, { status: 400 });

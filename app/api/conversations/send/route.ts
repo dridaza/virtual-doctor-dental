@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ghlFetch, getLocationId } from '@/lib/ghl';
 import { logEvent } from '@/lib/audit-log';
+import { blockIfNoConversationsAccess } from '@/lib/require-conversations';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,8 @@ export const dynamic = 'force-dynamic';
 // dispositivo. El correo también: se envía con el correo conectado en esta cuenta de GHL
 // (el de la clínica) al correo del paciente, nunca abre el cliente de correo local.
 export async function POST(request: Request) {
+  const denied = await blockIfNoConversationsAccess();
+  if (denied) return denied;
   try {
     const { contactId, message, type, subject } = await request.json();
     const trimmed = String(message || '').trim();

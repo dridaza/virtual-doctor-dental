@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ghlFetch } from '@/lib/ghl';
 import { logEvent } from '@/lib/audit-log';
 import { signFormToken } from '@/lib/session';
+import { blockIfNoConversationsAccess } from '@/lib/require-conversations';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -26,6 +27,8 @@ async function send(type: 'WhatsApp' | 'SMS', contactId: string, message: string
 // lo rechaza (p. ej. suscripción de WhatsApp inactiva), por SMS.
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: contactId } = await params;
+  const denied = await blockIfNoConversationsAccess();
+  if (denied) return denied;
   try {
     const data = await ghlFetch<{ contact: any }>(`/contacts/${contactId}`);
     const c = data.contact;
