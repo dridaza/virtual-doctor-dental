@@ -1,4 +1,5 @@
 import { logEvent } from '@/lib/audit-log';
+import { escapeHtml } from '@/lib/html-escape';
 import { moduleConfig } from '@/lib/modules';
 import { NextResponse } from 'next/server';
 import { ghlFetch, getLocationId } from '@/lib/ghl';
@@ -85,7 +86,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             contactId,
             emailFrom: location.location?.email || undefined,
             subject: `Recibo de pago - ${folio}`,
-            html: `<p>Hola ${patientName},</p><p>Adjunto tu recibo de pago, folio ${folio}. Gracias por tu confianza.</p>`,
+            html: `<p>Hola ${escapeHtml(patientName)},</p><p>Adjunto tu recibo de pago, folio ${escapeHtml(folio)}. Gracias por tu confianza.</p>`,
             attachments: [pdfUrl],
           }),
         });

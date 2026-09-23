@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { escapeHtml } from '@/lib/html-escape';
 import { ghlFetch, getLocationId, HC_RECETA_PREFIX } from '@/lib/ghl';
 import { logEvent } from '@/lib/audit-log';
 import { getNumeroHistoriaClinica } from '@/lib/historia-clinica';
@@ -67,7 +68,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             contactId,
             emailFrom: loc.email || undefined,
             subject: 'Tu receta médica',
-            html: `<p>Hola ${patientName},</p><p>Adjunto tu receta médica. Cualquier duda, con gusto te atendemos.</p>`,
+            html: `<p>Hola ${escapeHtml(patientName)},</p><p>Adjunto tu receta médica. Cualquier duda, con gusto te atendemos.</p>`,
             attachments: [pdfUrl],
           }),
         });
