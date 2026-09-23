@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySession, verifyFormToken, SESSION_COOKIE } from '@/lib/session';
+import { verifySession, verifyFormToken, verifyGate, SESSION_COOKIE, GATE_COOKIE } from '@/lib/session';
 
 export const config = {
   matcher: ['/((?!_next/).*)'],
@@ -10,6 +10,7 @@ export const config = {
 // login misma, y los archivos estáticos de la PWA.
 const PUBLIC_PATHS = [
   '/login',
+  '/acceso',
   '/formulario',
   '/manifest.json',
   '/sw.js',
@@ -32,14 +33,17 @@ function isPublicPath(pathname: string): boolean {
 function isPublicApi(pathname: string, method: string): boolean {
   if (pathname.startsWith('/api/formulario')) return true;
   if (pathname.startsWith('/api/auth/')) return true;
+  if (pathname.startsWith('/api/acceso')) return true;
   return false;
 }
 
 // El dashboard entero (todo menos el formulario que llena el paciente y los archivos
-// estáticos que ese formulario necesita) queda oculto detrás de una contraseña compartida,
-// aparte del inicio de sesión normal de cada persona: así no es un sitio público en internet,
-// aunque alguien adivine la URL de Vercel, no llega ni a la pantalla de login.
-const BASIC_AUTH_EXEMPT = ['/formulario', '/api/formulario'];
+// estáticos que ese formulario necesita) queda oculto detrás de una contraseña compartida del
+// equipo, aparte del inicio de sesión normal de cada persona: así no es un sitio público en
+// internet, aunque alguien adivine la URL. Es una cookie propia (no el cuadro nativo del
+// navegador vía HTTP), porque ese cuadro no funciona bien con el ícono de pantalla de inicio
+// en iPhone/Android.
+const GATE_EXEMPT = ['/formulario', '/api/formulario', '/acceso', '/api/acceso'];
 const ASSET_EXEMPT = new Set([
   '/manifest.json',
   '/sw.js',
@@ -55,36 +59,28 @@ const ASSET_EXEMPT = new Set([
   '/favicon-32.png',
 ]);
 
-function needsBasicAuth(pathname: string): boolean {
+function needsGate(pathname: string): boolean {
   if (ASSET_EXEMPT.has(pathname)) return false;
-  return !BASIC_AUTH_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + '/'));
+  return !GATE_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
-function checkBasicAuth(request: NextRequest): NextResponse | null {
-  const user = process.env.BASIC_AUTH_USER;
-  const pass = process.env.BASIC_AUTH_PASS;
-  if (!user || !pass) return null; // sin configurar: no se exige (para no bloquear en local)
-  if (!needsBasicAuth(request.nextUrl.pathname)) return null;
+async function checkGate(request: NextRequest): Promise<NextResponse | null> {
+  const pass = process.env.SITE_PASSWORD;
+  const secret = process.env.SESSION_SECRET;
+  if (!pass || !secret) return null; // sin configurar: no se exige (para no bloquear en local)
+  if (!needsGate(request.nextUrl.pathname)) return null;
 
-  const header = request.headers.get('authorization');
-  if (header?.startsWith('Basic ')) {
-    try {
-      const [u, p] = atob(header.slice(6)).split(':');
-      if (u === user && p === pass) return null;
-    } catch {
-      /* encabezado corrupto: se trata como no autenticado */
-    }
+  const cookie = request.cookies.get(GATE_COOKIE)?.value;
+  if (cookie && (await verifyGate(cookie, secret))) return null;
+
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.json({ error: 'Acceso restringido' }, { status: 401 });
   }
-  // "no-store" es clave: sin esto, el navegador puede guardar esta respuesta 401 y, en la
-  // siguiente visita, reusarla tal cual (revalidación silenciosa) sin volver a pedir la
-  // ventana de usuario/contraseña - así se veía "no abre" en Edge con la caché normal.
-  return new NextResponse('Acceso restringido', {
-    status: 401,
-    headers: {
-      'WWW-Authenticate': 'Basic realm="Virtual Doctor", charset="UTF-8"',
-      'Cache-Control': 'no-store, must-revalidate',
-    },
-  });
+  const url = new URL('/acceso', request.url);
+  url.searchParams.set('next', request.nextUrl.pathname + request.nextUrl.search);
+  const res = NextResponse.redirect(url);
+  res.headers.set('Cache-Control', 'no-store, must-revalidate');
+  return res;
 }
 
 // Cada instalación puede tener, además de su dominio propio, la URL automática de Vercel (y a
@@ -105,8 +101,8 @@ export async function middleware(request: NextRequest) {
   const redirect = canonicalRedirect(request);
   if (redirect) return redirect;
 
-  const basicAuthChallenge = checkBasicAuth(request);
-  if (basicAuthChallenge) return basicAuthChallenge;
+  const gateChallenge = await checkGate(request);
+  if (gateChallenge) return gateChallenge;
 
   if (pathname.startsWith('/api/')) {
     if (isPublicApi(pathname, request.method)) return NextResponse.next();

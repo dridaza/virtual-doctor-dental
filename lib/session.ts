@@ -26,6 +26,7 @@ function base64urlToBytes(s: string): Uint8Array {
 export type SessionPayload = { email: string; nombre: string; iat: number };
 export type FacturacionPayload = { fact: true; iat: number };
 export type FacturacionOtpPayload = { email: string; digest: string; exp: number };
+export type GatePayload = { gate: true; iat: number };
 
 async function sign(payload: object, secret: string): Promise<string> {
   const body = base64url(encoder.encode(JSON.stringify(payload)));
@@ -72,6 +73,19 @@ export async function verifyFormToken(token: string, id: string, secret: string)
 export const SESSION_COOKIE = 'vd_session';
 export const FACTURACION_COOKIE = 'vd_fact';
 export const FACTURACION_OTP_COOKIE = 'vd_fact_otp';
+export const GATE_COOKIE = 'vd_gate';
+
+// Cookie del "candado de acceso" (contraseña compartida del equipo, aparte de la sesión de cada
+// persona). Cookie normal, no el cuadro nativo del navegador: así sí funciona con el ícono de
+// pantalla de inicio en iPhone/Android, donde el cuadro de usuario/contraseña de HTTP no persiste.
+export function signGate(secret: string) {
+  return sign({ gate: true, iat: Date.now() } as GatePayload, secret);
+}
+
+export async function verifyGate(token: string, secret: string): Promise<boolean> {
+  const payload = await verify<GatePayload>(token, secret);
+  return !!payload?.gate;
+}
 
 export function signSession(payload: SessionPayload, secret: string) {
   return sign(payload, secret);
