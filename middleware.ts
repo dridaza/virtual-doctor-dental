@@ -75,9 +75,15 @@ function checkBasicAuth(request: NextRequest): NextResponse | null {
       /* encabezado corrupto: se trata como no autenticado */
     }
   }
+  // "no-store" es clave: sin esto, el navegador puede guardar esta respuesta 401 y, en la
+  // siguiente visita, reusarla tal cual (revalidación silenciosa) sin volver a pedir la
+  // ventana de usuario/contraseña - así se veía "no abre" en Edge con la caché normal.
   return new NextResponse('Acceso restringido', {
     status: 401,
-    headers: { 'WWW-Authenticate': 'Basic realm="Virtual Doctor", charset="UTF-8"' },
+    headers: {
+      'WWW-Authenticate': 'Basic realm="Virtual Doctor", charset="UTF-8"',
+      'Cache-Control': 'no-store, must-revalidate',
+    },
   });
 }
 
